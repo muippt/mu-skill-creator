@@ -6,7 +6,7 @@
   </picture>
 </p>
 
-# 🦐 mu-skill-creator ｜ Skill创作与质量门控
+# 🦐 mu-skill-creator · Skill创作与质量门控
 
 > AI Agent 技能的质量守门员 —— 内置 52 项 10 层审计模型与 8 阶段门控创建工作流。
 
