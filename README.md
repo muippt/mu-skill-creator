@@ -6,7 +6,7 @@
   </picture>
 </p>
 
-# 🦐 mu-skill-creator · Skill创作与质量门控
+# 🦐 mu-skill-creator · Skill创作发明家
 
 > The quality gatekeeper for AI agent skills — a 52-item, 10-layer audit model baked into an 8-stage gated creation workflow.
 
