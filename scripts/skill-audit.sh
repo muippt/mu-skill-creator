@@ -1,7 +1,7 @@
 #!/bin/bash
 # skill-audit.sh — mu-Skill 结构健康检查工具
 # 所属: mu-skill-creator Skill（scripts/skill-audit.sh）
-# 规则来源: mu-skill-creator 10层审计模型（52项，可自动验证子集）
+# 规则来源: mu-skill-creator 10层审计模型（53项，可自动验证子集）
 #
 # 用法:
 #   bash skill-audit.sh                    # 扫描全部 Skills
@@ -93,8 +93,8 @@ pass=0
 warn=0
 fail=0
 
-printf "%-20s %5s %8s %8s %8s %8s %8s\n" "SKILL" "LINES" "IRON" "IL専" "DESC" "SEC" "CODE"
-printf "%-20s %5s %8s %8s %8s %8s %8s\n" "--------------------" "-----" "--------" "--------" "--------" "--------" "--------"
+printf "%-20s %5s %8s %8s %8s %8s %8s %10s\n" "SKILL" "LINES" "IRON" "IL专" "DESC" "SEC" "CODE" "GOTCHA"
+printf "%-20s %5s %8s %8s %8s %8s %8s %10s\n" "--------------------" "-----" "--------" "--------" "--------" "--------" "--------" "----------"
 
 for entry in "${SKILLS[@]}"; do
   IFS='|' read -r name f <<< "$entry"
@@ -117,6 +117,10 @@ for entry in "${SKILLS[@]}"; do
   if grep -qi "IRON LAW" "$f"; then
     # 提取 IRON LAW 标题后到下一个 ## 标题之间的完整内容（不只看标题行）
     il_section=$(awk '/^## IRON LAW/{flag=1;next}/^## /{flag=0}flag' "$f")
+# Fallback: also match **IRON LAW** bold-line format (not all SKILLs use ## heading)
+if [ -z "$il_section" ]; then
+  il_section=$(grep -m1 '^\*\*IRON LAW' "$f" || grep -m1 'IRON LAW' "$f" || true)
+fi
     has_biz=$(echo "$il_section" | python3 -c "import sys,re; t=sys.stdin.read(); print(1 if re.search(r'禁止|必须|不得|告知|文档|报告|消息|触发', t) else 0)" 2>/dev/null || true)
     only_generic=$(echo "$il_section" | python3 -c "import sys,re; t=sys.stdin.read(); print(1 if re.search(r'shebang|set -euo|API Key', t) else 0)" 2>/dev/null || true)
     if [ "$has_biz" -gt 0 ]; then
@@ -153,6 +157,21 @@ for entry in "${SKILLS[@]}"; do
   # Security: restricted system URLs
   sec_hits=$(grep -cE "hr\.example\.com|ehr\.example|mthr\.example|hc\.example|ov\.example|goal\.example|okr\.example|huoshui\.example|bole\.example|talent\.example|hrmdm\.example|example\.avature" "$f" 2>/dev/null || true)
   if [ "$sec_hits" -gt 0 ]; then sec="⚠️${sec_hits}处"; else sec="✅"; fi
+
+  # L1-8: Gotchas 膨胀检测 (AP-34) — 踩坑段 ### 条目数 >10 或占全文 >40% → 信息告警(同 L1-5 不直接判红)
+  gt_stats=$(awk -v total="$lines" '
+    /^## .*([Gg]otcha|踩坑|排坑|坑记录)/ {flag=1; seclines=0; items=0; next}
+    /^## / {flag=0}
+    flag { seclines++; if ($0 ~ /^### /) items++ }
+    END { pct = (total>0) ? int(seclines*100/total) : 0; printf "%d %d %d", items, seclines, pct }
+  ' "$f" 2>/dev/null || echo "0 0 0")
+  gt_items=$(echo "$gt_stats" | awk '{print $1}')
+  gt_pct=$(echo "$gt_stats" | awk '{print $3}')
+  if [ "${gt_items:-0}" -gt 10 ] || [ "${gt_pct:-0}" -gt 40 ]; then
+    gotcha="⚠️${gt_items}条/${gt_pct}%"
+  else
+    gotcha="✅"
+  fi
 
   # ── Code Quality checks (scripts/ + assets/可执行文件) — L3/L7 automated subset ──
   skill_dir=$(dirname "$f")
@@ -208,7 +227,7 @@ for entry in "${SKILLS[@]}"; do
     code_issues="N/A"
   fi
 
-  printf "%-20s %5d %8s %8s %8s %8s %8s\n" "$name" "$lines" "$iron" "$il_diff" "$desc" "$sec" "$code"
+  printf "%-20s %5d %8s %8s %8s %8s %8s %10s\n" "$name" "$lines" "$iron" "$il_diff" "$desc" "$sec" "$code" "$gotcha"
 
   # Show code issues in verbose mode
   if [ "$VERBOSE" = true ] && [ -n "$code_issues" ] && [ "$code_issues" != "-" ] && [ "$code_issues" != "N/A" ]; then
@@ -232,18 +251,18 @@ if [ "$VERBOSE" = true ]; then
   echo ""
   echo "规则说明:"
   echo "  IRON:    SKILL.md 中包含 'IRON LAW' 关键词"
-  echo "  IL専:    IRON LAW 内容差异化检查（✅业务专属 / ❌套话 / ⚠️待查）"
+  echo "  IL专:    IRON LAW 内容差异化检查（✅业务专属 / ❌套话 / ⚠️待查）"
   echo "  DESC:    description 双引号单行 + 含'触发词' + 含'不适用'"
   echo "  SEC:     不引用安全受限系统URL (hr/ehr/ov/goal等.example.com)"
   echo "  LINES:   >250行为信息提示(IRON LAW豁免场景不阻断)"
   echo "  CODE:    scripts/+assets/代码扫描(L3-2 eval/L3-3 except/L3-4 debug/L3-6 shebang/L7-5 gitignore/L7-6 artifacts)"
 fi
 
-# ── 完整 52 项 10 层审计清单（每次都打印）──
+# ── 完整 53 项 10 层审计清单（每次都打印）──
 echo ""
-echo "━━━ 完整 10 层审计清单（52项，逐项确认后再发布）━━━"
+echo "━━━ 完整 10 层审计清单（53项，逐项确认后再发布）━━━"
 echo ""
-echo "【L1 文档结构】(7项, 4可自动化)"
+echo "【L1 文档结构】(8项, 5可自动化)"
 echo "  [ ] L1-1  IRON LAW: frontmatter后第一位, 业务专属; 无高频风险可不写"
 echo "  [ ] L1-2  description: 单行无emoji+触发词+不适用 | 无禁止词 | ≤10个触发词"
 echo "  [ ] L1-3  intro: 三段式有emoji≠description, tags≥6; SKILL.md无intro字段"
@@ -251,10 +270,11 @@ echo "  [ ] L1-4  name: 小写+数字+连字符, 与目录名完全一致"
 echo "  [ ] L1-5  行数≤300; 超限不直接判红,先评估能否拆分而不降效果,做不到则保留超行数视为通过(IRON LAW 5/AP-1)"
 echo "  [ ] L1-6  references/索引: 所有文件存在+SKILL.md有索引"
 echo "  [ ] L1-7  版本历史不入SKILL.md: 只留1行版本号+CHANGELOG链接 (AP-33)"
+echo "  [ ] L1-8  Gotchas未膨胀: 踩坑段###条目≤10且占全文≤40%; 超标按分层处置删/上浮/下沉到troubleshooting.md (AP-34; 同L1-5信息告警不直接判红)"
 echo ""
 echo "【L2 架构一致性】(5项, 2可自动化)"
 echo "  [ ] L2-1  逻辑冲突: 新旧规则不矛盾? 编号/数量声明与实际一致? 因果闭环"
-echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~32 | 指令可yes/no验证"
+echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~34 | 指令可yes/no验证"
 echo "  [ ] L2-3  跨章节一致: 原则↔AP↔事故三处对应? 联动表/正文无矛盾?"
 echo "  [ ] L2-4  交互一致: 多模式/分支流程描述不矛盾"
 echo "  [ ] L2-5  版本号: 改动幅度与版本号匹配"
@@ -309,7 +329,7 @@ echo "  [ ] L9-7  资源遍历上限: 遍历循环有行数/条数上限 (AP-31)
 echo ""
 echo "【L10 内容质量】(6项, 1可自动化)"
 echo "  [ ] L10-1 可验证性: 指令可yes/no判断"
-echo "  [ ] L10-2 AP清零: 无AP-1~32反模式"
+echo "  [ ] L10-2 AP清零: 无AP-1~34反模式"
 echo "  [ ] L10-3 文案质量: 无错别字/歧义/矛盾"
 echo "  [ ] L10-4 已知局限: 有##已知局限段, 诚实声明"
 echo "  [ ] L10-5 停滞检测: 含循环/迭代/Cron的Skill有stale_count机制"

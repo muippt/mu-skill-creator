@@ -8,7 +8,7 @@
 
 # 🦐 mu-skill-creator · Skill创作发明家
 
-> The quality gatekeeper for AI agent skills — a 52-item, 10-layer audit model baked into an 8-stage gated creation workflow.
+> The quality gatekeeper for AI agent skills — a 53-item, 10-layer audit model baked into an 8-stage gated creation workflow.
 
 **English** | [中文](README_CN.md) | [🌐 Landing Page](https://muippt.github.io/mu-skill-creator/)
 
@@ -26,8 +26,8 @@
 | Scenario | What you say | What happens |
 |----------|-------------|--------------|
 | 🆕 Create a new skill from scratch | "Create a skill that converts Markdown to articles" | Full 8-stage gated workflow: requirements → planning → L1/L2/L3 authoring → audit → publish |
-| 🔍 Audit an existing skill | "Run quality audit on my-skill" | 52-item checklist across 10 layers, with automated shell scan + human-judgment items |
-| 🚫 Fix anti-patterns | "Check my skill for anti-patterns" | AP-1 through AP-33 catalog scanned, each flagged with root cause and fix |
+| 🔍 Audit an existing skill | "Run quality audit on my-skill" | 53-item checklist across 10 layers, with automated shell scan + human-judgment items |
+| 🚫 Fix anti-patterns | "Check my skill for anti-patterns" | AP-1 through AP-34 catalog scanned, each flagged with root cause and fix |
 | 🎯 Optimize trigger words | "My skill isn't activating — help me fix the trigger" | Trigger word analysis: banned-word scan, coverage test, pushy-principle check |
 | 📊 Batch scan multiple skills | `bash scripts/skill-audit.sh skill-a skill-b` | Automated structural health check across all specified skills |
 | ✂️ Refactor a bloated skill | "My SKILL.md is 400 lines, help me slim it down" | 3-layer model applied: keep L2 ≤ 300 lines, move reference material to L3 |
@@ -36,13 +36,13 @@
 
 ### ✨ Core Highlights
 
-#### 52-Item, 10-Layer Audit Model
+#### 53-Item, 10-Layer Audit Model
 
-10 audit layers covering document structure, architecture consistency, code quality, cross-file alignment, security compliance, robustness, and content quality. 26 items are auto-scannable via shell script; 26 require human judgment. Every rule traces back to a real incident — no abstract advice.
+10 audit layers covering document structure, architecture consistency, code quality, cross-file alignment, security compliance, robustness, and content quality. 27 items are auto-scannable via shell script; 26 require human judgment. Every rule traces back to a real incident — no abstract advice.
 
 | Layer | Audit Target | Items | Auto |
 |-------|-------------|-------|------|
-| L1 | Document Structure | 7 | 4 |
+| L1 | Document Structure | 8 | 5 |
 | L2 | Architecture Consistency | 5 | 2 |
 | L3 | Code Quality | 8 | 6 |
 | L4 | Cross-File Consistency | 4 | 1 |
@@ -52,15 +52,15 @@
 | L8 | Security & Compliance | 3 | 2 |
 | L9 | Robustness & Degradation | 7 | 1 |
 | L10 | Content Quality | 6 | 1 |
-| **Total** | | **52** | **26** |
+| **Total** | | **53** | **27** |
 
 #### 3-Layer Architecture (L1 / L2 / L3)
 
 Context-aware loading: L1 trigger words always loaded (~100 words), L2 workflow loaded on activation (SKILL.md ≤ 300 lines), L3 reference docs loaded on demand. Controls context window bloat by design — only what's needed, when it's needed.
 
-#### AP-1 ~ AP-33 Anti-Pattern Catalog
+#### AP-1 ~ AP-34 Anti-Pattern Catalog
 
-33 anti-patterns, each traced to a real incident, linked to a design principle, and paired with a concrete fix. Battle-tested corrections, not abstract advice. Scanned automatically during every audit cycle.
+34 anti-patterns, each traced to a real incident, linked to a design principle, and paired with a concrete fix. Battle-tested corrections, not abstract advice. Scanned automatically during every audit cycle.
 
 #### Automated Audit Script
 
@@ -80,9 +80,9 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 
 | Dimension | mu-skill-creator | Manual Authoring | Generic Prompt Templates | AI Agent Frameworks |
 |-----------|-----------------|-----------------|------------------------|---------------------|
-| Audit model | 52 items, 10 layers | None | None | Varies |
+| Audit model | 53 items, 10 layers | None | None | Varies |
 | Automated scanning | ✅ Shell script | ❌ | ❌ | Rare |
-| Anti-pattern catalog | 33 items, traced to incidents | None | None | Few |
+| Anti-pattern catalog | 34 items, traced to incidents | None | None | Few |
 | Context-aware loading | ✅ 3-layer (L1/L2/L3) | ❌ Single file | ❌ | Varies |
 | Gated workflow | ✅ 8 stages with entry/exit | ❌ | ❌ | Rare |
 | Stall detection | ✅ Quantitative signals | ❌ | ❌ | ❌ |
@@ -110,8 +110,8 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Item | Description |
 |------|-------------|
 | Architecture | 3-layer model (L1 trigger / L2 workflow / L3 reference) |
-| Audit model | 52 items across 10 layers (26 auto-scannable, 26 human-judgment) |
-| Anti-patterns | 33 items, each linked to a real incident and fix |
+| Audit model | 53 items across 10 layers (27 auto-scannable, 26 human-judgment) |
+| Anti-patterns | 34 items, each linked to a real incident and fix |
 | Workflow stages | 8 main + 2 optional (1.5 case study, 6.5 eval testing) |
 | Audit script | Bash shell script, zero external dependencies |
 | Skill format | Markdown (SKILL.md) + references/ + scripts/ + assets/ |
@@ -119,7 +119,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v3.6 |
+| Version | v3.7 |
 
 ---
 
@@ -138,7 +138,7 @@ Tell your AI agent:
 
 ```
 "Create a skill that does X"           → full 8-stage creation workflow
-"Audit my-skill for quality issues"    → 52-item 10-layer audit
+"Audit my-skill for quality issues"    → 53-item 10-layer audit
 ```
 
 **3. Run the automated scanner**
@@ -168,7 +168,7 @@ If this project helped you build better AI agent skills, give it a star ⭐
 
 [![Star History Chart](https://api.star-history.com/svg?repos=muippt/mu-skill-creator&type=Date)](https://star-history.com/#muippt/mu-skill-creator&Date)
 
-> The quality gatekeeper for AI agent skills — 52 items, 10 layers, zero compromises.
+> The quality gatekeeper for AI agent skills — 53 items, 10 layers, zero compromises.
 
 ---
 
@@ -192,4 +192,4 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v3.6 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v3.7 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
