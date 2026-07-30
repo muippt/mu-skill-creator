@@ -32,12 +32,63 @@
   <footer><div class="container"><div class="footer-links"><a href="https://github.com/muippt/mu-skill-creator" target="_blank">GitHub</a><a href="https://github.com/muippt/mu-skill-creator/blob/main/README_CN.md" target="_blank">中文文档</a><a href="https://github.com/muippt/mu-skill-creator/releases" target="_blank">发布历史</a><a href="https://github.com/muippt/mu-skill-creator/issues" target="_blank">问题反馈</a></div><div class="badges"><a href="https://mp.weixin.qq.com/s/v1JSZvlN5fvbOOHvkvXEtA" target="_blank"><img src="https://img.shields.io/badge/muippt-07C160?logo=wechat&logoColor=white" alt="微信公众号" height="20"></a><a href="https://xhslink.com/m/ESxtgUNMdl" target="_blank"><img src="https://img.shields.io/badge/muippt-FF2442?logo=xiaohongshu&logoColor=white" alt="小红书" height="20"></a><a href="https://item.m.jd.com/product/14547345.html" target="_blank"><img src="https://img.shields.io/badge/书籍-图解团队管理-BBDDE5?logo=bookstack&logoColor=white" alt="图解团队管理" height="20"></a><a href="https://github.com/muippt" target="_blank"><img src="https://img.shields.io/badge/muippt-181717?logo=github&logoColor=white" alt="GitHub" height="20"></a></div></div></footer>
   <script>
     (function(){
-      const root=document.documentElement,toggle=document.getElementById('themeToggle'),media=window.matchMedia('(prefers-color-scheme: dark)');
-      function applyTheme(theme){root.dataset.theme=theme;const dark=theme==='dark';toggle.textContent=dark?'☀':'☾';toggle.title=dark?'切换浅色模式':'切换深色模式';toggle.setAttribute('aria-label',toggle.title)}
+      var root=document.documentElement;
+      var toggle=document.getElementById('themeToggle');
+      var media=window.matchMedia('(prefers-color-scheme: dark)');
+      function applyTheme(theme){
+        root.setAttribute('data-theme',theme);
+        var dark=theme==='dark';
+        toggle.textContent=dark?'☀':'☾';
+        toggle.title=dark?'切换浅色模式':'切换深色模式';
+        toggle.setAttribute('aria-label',toggle.title);
+      }
       applyTheme(localStorage.getItem('mu-sc-theme')||(media.matches?'dark':'light'));
-      toggle.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';localStorage.setItem('mu-sc-theme',next);applyTheme(next)});
-      media.addEventListener('change',e=>{if(!localStorage.getItem('mu-sc-theme'))applyTheme(e.matches?'dark':'light')});
-      document.querySelectorAll('#langSwitch span').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('#langSwitch span').forEach(x=>x.classList.toggle('active',x===el)}));
+      toggle.addEventListener('click',function(){
+        var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+        localStorage.setItem('mu-sc-theme',next);
+        applyTheme(next);
+      });
+      media.addEventListener('change',function(event){if(!localStorage.getItem('mu-sc-theme'))applyTheme(event.matches?'dark':'light')});
+
+      var translations={
+        '使用场景':'Use cases','核心亮点':'Highlights','工具对比':'Comparison','工作流':'Workflows','下载 Skill':'Download Skill','查看源码':'View source','审计项':'Audit items','审计层级':'Audit layers','反模式':'Anti-patterns','门控阶段':'Gated stages',
+        'AI Agent 技能的质量守门员。':'The quality gatekeeper for AI agent skills.','内置 53 项 10 层审计模型、34 条反模式与 8 阶段门控创建工作流。':'A 53-item, 10-layer audit model, 34 anti-patterns, and an 8-stage gated workflow.',
+        '从创建到发布的全流程质量门控':'Quality gates from creation to release','无论是从零创建、质量审计还是发布前检查，都有对应的工作流与质量标准。':'Find a clear workflow and quality standard for creation, auditing, and pre-release checks.','场景':'Scenario','你说的话':'What you say','实际效果':'What happens',
+        '🆕 从零创建新技能':'🆕 Create a new skill','🔍 审计已有技能':'🔍 Audit an existing skill','🚫 修复反模式':'🚫 Fix anti-patterns','🎯 优化触发词':'🎯 Optimize triggers','📊 批量扫描多个技能':'📊 Batch scan skills','✂️ 重构臃肿技能':'✂️ Refactor a bloated skill',
+        '每条规则都追溯至真实事故':'Every rule traces to a real incident','不是抽象建议，而是覆盖创建、审计、重构与发布的完整质量体系。':'Not abstract advice—a complete quality system for creation, auditing, refactoring, and publishing.','53 项 10 层审计模型':'53-item, 10-layer audit model','三层架构':'Three-layer architecture','34 条反模式目录':'34 anti-pattern catalog','自动化审计脚本':'Automated audit script','停滞检测规则':'Stall detection','安全优先设计':'Security-first design',
+        'AI Agent 技能的质量守门员':'The quality gatekeeper for AI agent skills','把“写出来”变成“可验证、可复用、可发布”的工程流程。':'Turn authoring into a verifiable, reusable, publishable engineering process.','维度':'Dimension','手工编写':'Manual authoring','通用提示模板':'Generic prompt templates','AI Agent 框架':'AI agent frameworks',
+        '按场景触发相应工作流':'Choose the workflow for your task','根据你的任务选择对应入口，让技能创建、审计和发布都有清晰路径。':'Choose the right entry point for clear creation, audit, and release paths.','从零构建技能':'Build from scratch','发布前质量检查':'Pre-release quality check','诊断技能退化':'Diagnose skill degradation','技能不被可靠触发':'Skill does not trigger reliably','SKILL.md 超过 300 行':'SKILL.md exceeds 300 lines','多技能健康检查':'Multi-skill health check','最终安全扫描 + 打包':'Final security scan + package',
+        '别再目测了。':'Stop eyeballing.','用工程方法。':'Start engineering.','在 GitHub 上查看':'View on GitHub','中文文档':'Chinese docs','发布历史':'Release history','问题反馈':'Issues'
+      };
+      var originals=[];
+      var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);
+      var node;
+      while((node=walker.nextNode())){if(node.nodeValue.trim())originals.push({node:node,zh:node.nodeValue});}
+      function applyLang(lang){
+        originals.forEach(function(item){
+          if(lang==='zh'){item.node.nodeValue=item.zh;return;}
+          var key=item.zh.trim();
+          if(translations[key]){item.node.nodeValue=item.zh.replace(key,translations[key]);}
+        });
+        var english=lang==='en';
+        var heroTitle=document.querySelector('.hero h1');
+        var heroSub=document.querySelector('.hero-sub');
+        var heroButtons=document.querySelectorAll('.hero .actions a');
+        if(english){
+          heroTitle.innerHTML='The <em>quality gatekeeper</em><br>for AI agent skills.';
+          heroSub.textContent='A 53-item, 10-layer audit model, 34 anti-patterns, and an 8-stage gated workflow.';
+          heroButtons[0].textContent='Download Skill';heroButtons[1].textContent='View source';
+        }else{
+          heroTitle.innerHTML='AI Agent 技能的<br><em>质量守门员</em>。';
+          heroSub.textContent='内置 53 项 10 层审计模型、34 条反模式与 8 阶段门控创建工作流。';
+          heroButtons[0].textContent='下载 Skill';heroButtons[1].textContent='查看源码';
+        }
+        document.querySelectorAll('#langSwitch span').forEach(function(item){item.classList.toggle('active',item.getAttribute('data-lang')===lang)});
+        root.lang=english?'en':'zh';
+        localStorage.setItem('mu-sc-lang',lang);
+      }
+      document.querySelectorAll('#langSwitch span').forEach(function(item){item.addEventListener('click',function(){applyLang(item.getAttribute('data-lang'))})});
+      applyLang(localStorage.getItem('mu-sc-lang')||'zh');
     })();
   </script>
 </body>
