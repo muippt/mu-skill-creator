@@ -167,7 +167,7 @@ bash scripts/skill-audit.sh --verbose        # 详细输出
 
 如果这个项目帮你构建了更好的 AI Agent 技能，给个 star ⭐
 
-[![Star History Chart](https://api.star-history.com/svg?repos=muippt/mu-skill-creator&type=Date)](https://star-history.com/#muippt/mu-skill-creator&Date)
+[![Star History Chart](assets/star-history.svg)](https://www.star-history.com/?repos=muippt%2Fmu-skill-creator&type=date)
 
 > AI Agent 技能的质量守门员 —— 53 项，10 层，零妥协。
 
