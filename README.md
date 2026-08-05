@@ -163,11 +163,11 @@ bash scripts/skill-audit.sh --verbose        # detailed output
 
 ---
 
-### ⭐ Star History
+### ⭐ Star the Project
 
 If this project helped you build better AI agent skills, give it a star ⭐
 
-[![Star History Chart](https://api.star-history.com/svg?repos=muippt/mu-skill-creator&type=Date)](https://star-history.com/#muippt/mu-skill-creator&Date)
+[![GitHub Stars](https://img.shields.io/github/stars/muippt/mu-skill-creator?style=flat&logo=github&label=Stars)](https://github.com/muippt/mu-skill-creator/stargazers)
 
 > The quality gatekeeper for AI agent skills — 53 items, 10 layers, zero compromises.
 
