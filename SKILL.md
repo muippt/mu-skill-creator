@@ -161,6 +161,7 @@ L3：每主题一文件，超100行加索引
   - E类(Edge)：边缘输入/极端场景未覆盖
   - 超3条→逐条用三维评价审核:是硬伤还是待办？能合并还是删除？(WHY:3条逼聚焦,mu-github-publisher 21条压缩后实际硬伤仅3条)
 - **版本历史不入SKILL.md**：SKILL.md只留1行版本号+CHANGELOG.md链接(如`当前版本 vX.X，完整历史见 references/CHANGELOG.md`)。版本历史是溯源信息，不参与任何生成/路由/决策，占行数=纯浪费注意力预算(WHY:mu-visual-card曾用35行版本历史占615行中的5.7%，迁移后省至1行)
+- **AP清单用表格不用段落**：主文件AP清单每条一行(反模式名 + 一句话修复 + 根因事故 + 对应原则)，完整描述(症状/后果/检查/修复细节/根因叙述)留references/quality-gates.md。AP-33/34管版本历史和Gotchas不要堆主文件，AP描述自身同理——AP清单是"索引"不是"百科全书"(WHY:mu-skill-creator v4.1 AP-33~37自身以大段blockquote写进主文件，违反AP-33/34精神)
 
 **出口**：`wc -l SKILL.md`≤300，有Checklist(IRON LAW按需)
 
@@ -217,7 +218,7 @@ L3：每主题一文件，超100行加索引
 > **用户态数据隔离**：本地已安装列表/用户偏好/快照/推荐历史等个性化文件**禁止随Skill发布**，必须`.skillignore`排除+SKILL.md声明"首次使用自动生成"(根因:发布者数据污染下载用户行为)
 > **正确做法**：Skill只写"运行时现读"指令(contentId/知识库链接)，内容不进Skill。违反=安全泄密+发布拦截
 
-## §7 Anti-Pattern 清单(AP-1~37)
+## §7 Anti-Pattern 清单(AP-1~38)
 
 > 完整说明+修复示例见[references/quality-gates.md](references/quality-gates.md)。每条标注根因事故和对应的设计原则。
 
@@ -252,8 +253,9 @@ L3：每主题一文件，超100行加索引
 | 35 | 事故仅记录未闭环(ICE-5) | 修复必落进工作流/脚本/checklist | 事故复发因仅记录未工程化 | §4防御10 |
 | 36 | 附件文档职责重叠 | 合并为唯一权威文件,其余标DEPRECATED | mu-wechat-typeset templates/与references/重叠 | §1失效2+§3决策1 |
 | 37 | 已知局限膨胀/无降级路径 | 三要素重写+P/D/E合并+≤3条+三维重要性 | mu-github-publisher 21条6756字→实际3条 | §4防御9+§1失效3 |
+| 38 | AP描述膨胀(段落代替索引) | AP清单用表格每条一行,完整描述留references | mu-skill-creator v4.1 AP-33~37自身用blockquote | §3决策1+§1失效3 |
 
-> 失效模式→AP: 遗忘→3/5/8/17/25 | 冲突→4/14/16/18/27/36 | 膨胀→1/9/13/15/20/31/33/34/37 | 跨模式→6/7/10/11/12/19/23/24/26/28/29/30/32 | 闭环缺失→35
+> 失效模式→AP: 遗忘→3/5/8/17/25 | 冲突→4/14/16/18/27/36 | 膨胀→1/9/13/15/20/31/33/34/37/38 | 跨模式→6/7/10/11/12/19/23/24/26/28/29/30/32 | 闭环缺失→35
 
 ## §8 全面审计：10层55项模型
 
@@ -284,7 +286,7 @@ L3：每主题一文件，超100行加索引
 **L7文件卫生**: 🔍L7-1 僵尸文件(refs有引用) | 🔍L7-2 断链(引用均存在) | 👤L7-3 路径孤儿(改名同步) | 👤L7-4 用户态未混入 | 🔍L7-5 .gitignore(scripts/时) | 🔍L7-6 无平台产物
 **L8安全合规**: 🔍L8-1 安全扫描(appkey/MIS/C4/受限系统) | 👤L8-2 SSO方案 | 🔍L8-3 frontmatter无MIS(AP-21) | 🔍L8-4 _meta.json已排除(AP-22)
 **L9健壮性&降级**: 👤L9-1 降级链(外部依赖有处理) | 👤L9-2 改动类→Confirm Gate | 👤L9-3 流水线→子Agent规范 | 👤L9-4 数据量限制(AP-13) | 👤L9-5 大文件截断(AP-15) | 🔍L9-6 路径安全(splitext) | 🔍L9-7 遍历上限
-**L10内容质量**: 👤L10-1 可验证性(yes/no) | 🔍L10-2 AP清零(无AP-1~37)+ICE闭环(标`ICE: required`时须有closure_check.*或等价质量门且运行退出0) | 👤L10-3 文案(无错别字) | 👤L10-4 已知局限(每条含三要素:能力边界→触发条件→降级路径;P/D/E分类标注;同类合并;≤3条;重要性降序;非硬伤不收入;AP-37) | 👤L10-5 停滞检测(stale_count) | 👤L10-6 边缘输入覆盖(极短/极长/空输入/非预期语言等边界条件是否有处理指引或在已知局限中声明)
+**L10内容质量**: 👤L10-1 可验证性(yes/no) | 🔍L10-2 AP清零(无AP-1~38)+ICE闭环(标`ICE: required`时须有closure_check.*或等价质量门且运行退出0) | 👤L10-3 文案(无错别字) | 👤L10-4 已知局限(每条含三要素:能力边界→触发条件→降级路径;P/D/E分类标注;同类合并;≤3条;重要性降序;非硬伤不收入;AP-37) | 👤L10-5 停滞检测(stale_count) | 👤L10-6 边缘输入覆盖(极短/极长/空输入/非预期语言等边界条件是否有处理指引或在已知局限中声明)
 
 ## §9 已知局限
 
@@ -296,7 +298,7 @@ L3：每主题一文件，超100行加索引
 
 | 文件 | 说明 |
 |------|------|
-| [quality-gates.md](references/quality-gates.md) | AP-1~37完整说明+10层审计模型+Eval+触发词优化 |
+| [quality-gates.md](references/quality-gates.md) | AP-1~38完整说明+10层审计模型+Eval+触发词优化 |
 | [publish-workflow.md](references/publish-workflow.md) | 组织四步发布(安全→校验→打包→push→验证) |
 | [collaboration-guide.md](references/collaboration-guide.md) | 推荐联动(mu-dev-workflow+mu-skill-shrimp) | [evals.json](evals/evals.json) | Eval测试用例示范 |
 | [CHANGELOG.md](references/CHANGELOG.md) | 版本历史记录 |
