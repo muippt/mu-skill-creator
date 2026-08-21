@@ -11,11 +11,11 @@
 |---|------|---------|
 | 1 | **发布需明确授权**：必须等木老师说"可以发布"才执行 publish/push | 白干 |
 | 2 | **SKILL.md 中禁止出现真实 appkey** | 安全拦截 |
-| 3 | **`--intro auto` 已死**：必须手动传三段式文本 | Skill市场简介显示触发器文本 |
+| 3 | **`--intro auto` 已死**：必须手动传三段式文本 | Skill 市场简介显示触发器文本 |
 | 4 | **description ≠ intro**：内容完全不同 | Agent 触发率下降 |
 | 5 | **发布后禁止猜 id**：必须 `skill-cli search` 查真实数字 | 链接 404 |
 | 6 | **zip + 说明必须两条分开发** | 木老师收不到文字 |
-| 7 | **`--intro` 换行符必须用 printf**：dash 不解析 `\n` | Skill市场显示 `\n` 字面量 |
+| 7 | **`--intro` 换行符必须用 printf**：dash 不解析 `\n` | Skill 市场显示 `\n` 字面量 |
 
 ---
 
@@ -40,7 +40,7 @@ visibility: public
 cd <skill-dir>
 
 echo "=== ① 人员信息 ==="
-grep -rn "@example\.com\|userID:[0-9]\|userId:[0-9]\|MIS:[a-z]" \
+grep -rn "@restricted.internal.example\|empId:[0-9]\|userId:[0-9]\|MIS:[a-z]" \
   SKILL.md scripts/ references/ assets/ 2>/dev/null
 
 echo "=== ② 组织/规模 ==="
@@ -52,11 +52,11 @@ grep -rn "client_secret\s*=\s*['\"][^'\"<]\|Bearer [A-Za-z0-9]\{20,\}\|token\s*=
   SKILL.md scripts/ references/ assets/ 2>/dev/null
 
 echo "=== ④ 内网地址 ==="
-grep -rn "km\.example\.com/page/[0-9]\|10\.[0-9]\+\.[0-9]\+\.[0-9]\+\|192\.168\." \
+grep -rn "km\.internal-corp\.com/page/[0-9]\|10\.[0-9]\+\.[0-9]\+\.[0-9]\+\|192\.168\." \
   SKILL.md scripts/ references/ assets/ 2>/dev/null
 
 echo "=== ④b 受限系统（禁止Skill调用） ==="
-grep -rn "hr\.example\.com\|ehr\.example\.com\|mthr\.example\.com\|hc\.example\.com\|ov\.example\.com\|goal\.example\.com\|okr\.example\.com\|huoshui\.example\.com\|bole\.example\.com\|talent\.example\.com\|hrmdm\.example\.com\|restricted.internal.example" \
+grep -rn "hr\.internal-corp\.com\|ehr\.internal-corp\.com\|mthr\.internal-corp\.com\|hc\.internal-corp\.com\|ov\.internal-corp\.com\|goal\.internal-corp\.com\|okr\.internal-corp\.com\|huoshui\.internal-corp\.com\|bole\.internal-corp\.com\|talent\.internal-corp\.com\|hrmdm\.internal-corp\.com\|restricted.internal.example" \
   SKILL.md scripts/ references/ assets/ 2>/dev/null
 
 echo "=== ⑤ cron/脚本硬编码用户名 ==="
@@ -98,17 +98,17 @@ unzip -l /tmp/mu-<name>.zip | head -5
 
 ```python
 # 第一条：zip 附件
-message(action=send, channel=messaging, media="/tmp/mu-<name>.zip", filename="mu-<name>.zip")
+message(action=send, channel=<messaging>, media="/tmp/mu-<name>.zip", filename="mu-<name>.zip")
 
 # 第二条：单独发三段式说明（先文件后文字）
-message(action=send, channel=messaging, message="<三段式说明文本>")
+message(action=send, channel=<messaging>, message="<三段式说明文本>")
 ```
 
 > ⚠️ 两条全发完才算 Step ③ 完成，缺一条不得继续
 
 ---
 
-## Step ④：推送到Skill市场
+## Step ④：推送到 Skill 市场
 
 **首次发布（新 Skill）：**
 ```bash
@@ -135,19 +135,19 @@ skill-cli push <dir-name> \
 skill-cli search <name> --ciba <your-appkey> 2>&1 | grep "^id:"
 
 # 2. 拼链接（唯一正确格式）
-# https://skill-platform.example.com/skills/skill-detail?id=<真实id>&activeTab=overview
+# https://<skill-marketplace-url>/skills/skill-detail?id=<真实id>&activeTab=overview
 ```
 
 | 检查项 | 操作 | 期望 |
 |--------|------|------|
-| Skill市场可搜到 | `skill-cli search <name>` | 有结果 |
-| 简介已更新 | browser-automation-tool 打开详情页"简介"tab | 三段式 intro，非触发器文本 |
-| 安全徽章 | browser-automation-tool 截图详情页 | 两个绿色徽章 |
-| Skill市场分类标签 | 浏览器编辑页手动勾选 | 对应分类已勾 |
+| Skill 市场可搜到 | `skill-cli search <name>` | 有结果 |
+| 简介已更新 | browser 打开详情页"简介"tab | 三段式 intro，非触发器文本 |
+| 安全徽章 | browser 截图详情页 | 两个绿色徽章 |
+| Skill 市场分类标签 | 浏览器编辑页手动勾选 | 对应分类已勾 |
 
 > 🔴 安全/平台检测任一为红 → 立即自查修复，不等木老师发现
 
-发完Skill市场链接通知木老师：`✅ 已上线Skill市场：[mu-xxx](https://skill-platform.example.com/skills/skill-detail?id=<id>)`
+发完 Skill 市场链接通知木老师：`✅ 已上线 Skill 市场：[mu-xxx](https://<skill-marketplace-url>/skills/skill-detail?id=<id>)`
 
 ---
 
@@ -156,8 +156,8 @@ skill-cli search <name> --ciba <your-appkey> 2>&1 | grep "^id:"
 | 坑 | 表现 | 正确做法 |
 |----|------|---------|
 | SKILL.md 含真实 appkey | 安全拦截 | appkey 字段删掉或写占位符 |
-| `--intro auto` | Skill市场显示触发器文本 | 手动传三段式 |
-| `--intro "...\n..."` | Skill市场显示 `\n` 字面量 | 用 `printf` 生成换行再传 |
+| `--intro auto` | Skill 市场显示触发器文本 | 手动传三段式 |
+| `--intro "...\n..."` | Skill 市场显示 `\n` 字面量 | 用 `printf` 生成换行再传 |
 | 发布后猜 id | 链接 404 | `skill-cli search` 查真实 id |
 | zip 根目录多套一层 | 安装后目录结构错 | `cd` 进 skill 目录再 zip |
 | zip + 说明合并一条发 | 木老师收不到文字 | 两条分开发，先文件后文字 |

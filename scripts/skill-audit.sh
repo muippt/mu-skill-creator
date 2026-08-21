@@ -1,7 +1,7 @@
 #!/bin/bash
 # skill-audit.sh — mu-Skill 结构健康检查工具
 # 所属: mu-skill-creator Skill（scripts/skill-audit.sh）
-# 规则来源: mu-skill-creator 10层审计模型（53项，可自动验证子集）
+# 规则来源: mu-skill-creator 10层审计模型（55项，可脚本核验子集）
 #
 # 用法:
 #   bash skill-audit.sh                    # 扫描全部 Skills
@@ -22,7 +22,7 @@ set -euo pipefail
 # Auto-detect SKILL_BASE: env var > script location > fallback
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -z "${SKILL_BASE:-}" ]; then
-  # Try 2 levels up (non-nested) then 3 levels up ( nested)
+  # Try 2 levels up (non-nested) then 3 levels up (nested subdir)
   for _d in "$(dirname "$(dirname "$SCRIPT_DIR")")" "$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")"; do
     if find "$_d" -maxdepth 3 -name "SKILL.md" -print -quit 2>/dev/null | grep -q .; then
       SKILL_BASE="$_d"
@@ -32,7 +32,7 @@ if [ -z "${SKILL_BASE:-}" ]; then
 fi
 if [ -z "${SKILL_BASE:-}" ]; then
   echo "⚠️ 无法自动定位 Skills 目录，请设置 SKILL_BASE 环境变量" >&2
-  echo "  例如: export SKILL_BASE=./skills" >&2
+  echo "  例如: export SKILL_BASE=~/.skills" >&2
   exit 1
 fi
 VERBOSE=false
@@ -52,7 +52,7 @@ SKILLS=()
 
 if [ ${#TARGETS[@]} -eq 0 ]; then
   # 未指定 → 自动扫描全部含 SKILL.md 的子目录
-  # 先不带 -L 查找（快），找不到再带 -L（跟随 symlink，覆盖 ./skills/mu-* symlink 安装路径）
+  # 先不带 -L 查找（快），找不到再带 -L（跟随 symlink，覆盖 ~/.skills/mu-* symlink 安装路径）
   _scan_result=$(find "$SKILL_BASE" -maxdepth 3 -name "SKILL.md" ! -path "*/_archive/*" ! -path "*/_*/*" 2>/dev/null | sort)
   if [ -z "$_scan_result" ]; then
     _scan_result=$(find -L "$SKILL_BASE" -maxdepth 3 -name "SKILL.md" ! -path "*/_archive/*" ! -path "*/_*/*" 2>/dev/null | sort)
@@ -66,10 +66,10 @@ if [ ${#TARGETS[@]} -eq 0 ]; then
     SKILLS+=("${name}|${skill_md}")
   done <<< "$_scan_result"
 else
-  # 指定名称 → 找对应 SKILL.md（支持  嵌套路径 + symlink 安装路径）
+  # 指定名称 → 找对应 SKILL.md（支持嵌套子目录 + symlink 安装路径）
   for target in "${TARGETS[@]}"; do
     skill_md=$(find "$SKILL_BASE" -maxdepth 3 -path "*/${target}/SKILL.md" 2>/dev/null | head -1 || true)
-    # Fallback: 跟随 symlink 重试（覆盖 ./skills/mu-* symlink 安装路径）
+    # Fallback: 跟随 symlink 重试（覆盖 ~/.skills/mu-* symlink 安装路径）
     if [ -z "$skill_md" ]; then
       skill_md=$(find -L "$SKILL_BASE" -maxdepth 3 -path "*/${target}/SKILL.md" 2>/dev/null | head -1 || true)
     fi
@@ -87,14 +87,14 @@ if [ ${#SKILLS[@]} -eq 0 ]; then
   exit 1
 fi
 
-# Counters
+# 核验计数：这些结果只提供全面审计所需的脚本证据，不构成独立审计结论。
 total=0
 pass=0
 warn=0
 fail=0
 
-printf "%-20s %5s %8s %8s %8s %8s %8s %10s\n" "SKILL" "LINES" "IRON" "IL专" "DESC" "SEC" "CODE" "GOTCHA"
-printf "%-20s %5s %8s %8s %8s %8s %8s %10s\n" "--------------------" "-----" "--------" "--------" "--------" "--------" "--------" "----------"
+printf "%-20s %5s %8s %8s %8s %8s %8s %8s %6s\n" "SKILL" "LINES" "IRON" "IL専" "DESC" "SEC" "CODE" "GOTCHA" "ICE"
+printf "%-20s %5s %8s %8s %8s %8s %8s %8s %6s\n" "--------------------" "-----" "--------" "--------" "--------" "--------" "--------" "--------" "------"
 
 for entry in "${SKILLS[@]}"; do
   IFS='|' read -r name f <<< "$entry"
@@ -109,18 +109,40 @@ for entry in "${SKILLS[@]}"; do
   lines=$(wc -l < "$f")
   skill_ok=true
 
+  # L1-8: Gotchas 膨胀机检（AP-34）— 条目>10 或 占全文行数>40% 则告警
+  # 定位 Gotchas/踩坑 标题到下一个同级 ## 之间：统计 ### 条目数与段落行数
+  gotcha="✅"
+  gt_stats=$(awk -v total="$lines" '
+    /^## .*([Gg]otcha|踩坑|排坑|坑记录)/ {flag=1; seclines=0; items=0; next}
+    /^## / {flag=0}
+    flag {
+      seclines++
+      if ($0 ~ /^### /) items++
+    }
+    END {
+      pct = (total>0) ? (seclines*100/total) : 0
+      printf "%d %d %d", items, seclines, pct
+    }
+  ' "$f" 2>/dev/null || echo "0 0 0")
+  gt_items=$(echo "$gt_stats" | awk '{print $1}')
+  gt_pct=$(echo "$gt_stats" | awk '{print $3}')
+  if [ "${gt_items:-0}" -gt 10 ] || [ "${gt_pct:-0}" -gt 40 ]; then
+    gotcha="⚠️${gt_items}条/${gt_pct}%"
+  elif [ "${gt_items:-0}" -eq 0 ]; then
+    gotcha="-"
+  fi
+
   # IRON LAW check — 存在性（无 IRON LAW 为警告而非强制失败）
   if grep -qi "IRON LAW" "$f"; then iron="✅"; else iron="⚠️建议"; fi
 
   # IRON LAW 差异化检查 — 有 IRON LAW 时必须是业务专属约束，不得只写通用套话
   il_diff="⚠️"
   if grep -qi "IRON LAW" "$f"; then
-    # 提取 IRON LAW 标题后到下一个 ## 标题之间的完整内容（不只看标题行）
+    # 优先提取 ## IRON LAW 段；若铁律以内联加粗行呈现，则回退读取该行。
     il_section=$(awk '/^## IRON LAW/{flag=1;next}/^## /{flag=0}flag' "$f")
-# Fallback: also match **IRON LAW** bold-line format (not all SKILLs use ## heading)
-if [ -z "$il_section" ]; then
-  il_section=$(grep -m1 '^\*\*IRON LAW' "$f" || grep -m1 'IRON LAW' "$f" || true)
-fi
+    if [ -z "$il_section" ]; then
+      il_section=$(grep -im1 "IRON LAW" "$f" || true)
+    fi
     has_biz=$(echo "$il_section" | python3 -c "import sys,re; t=sys.stdin.read(); print(1 if re.search(r'禁止|必须|不得|告知|文档|报告|消息|触发', t) else 0)" 2>/dev/null || true)
     only_generic=$(echo "$il_section" | python3 -c "import sys,re; t=sys.stdin.read(); print(1 if re.search(r'shebang|set -euo|API Key', t) else 0)" 2>/dev/null || true)
     if [ "$has_biz" -gt 0 ]; then
@@ -155,23 +177,8 @@ fi
   fi
 
   # Security: restricted system URLs
-  sec_hits=$(grep -cE "hr\.example\.com|ehr\.example|mthr\.example|hc\.example|ov\.example|goal\.example|okr\.example|huoshui\.example|bole\.example|talent\.example|hrmdm\.example|example\.avature" "$f" 2>/dev/null || true)
+  sec_hits=$(grep -cE "hr\.internal-corp\.com|ehr\.internal-corp|mthr\.internal-corp|hc\.internal-corp|ov\.internal-corp|goal\.internal-corp|okr\.internal-corp|huoshui\.internal-corp|bole\.internal-corp|talent\.internal-corp|hrmdm\.internal-corp|restricted.internal.example" "$f" 2>/dev/null || true)
   if [ "$sec_hits" -gt 0 ]; then sec="⚠️${sec_hits}处"; else sec="✅"; fi
-
-  # L1-8: Gotchas 膨胀检测 (AP-34) — 踩坑段 ### 条目数 >10 或占全文 >40% → 信息告警(同 L1-5 不直接判红)
-  gt_stats=$(awk -v total="$lines" '
-    /^## .*([Gg]otcha|踩坑|排坑|坑记录)/ {flag=1; seclines=0; items=0; next}
-    /^## / {flag=0}
-    flag { seclines++; if ($0 ~ /^### /) items++ }
-    END { pct = (total>0) ? int(seclines*100/total) : 0; printf "%d %d %d", items, seclines, pct }
-  ' "$f" 2>/dev/null || echo "0 0 0")
-  gt_items=$(echo "$gt_stats" | awk '{print $1}')
-  gt_pct=$(echo "$gt_stats" | awk '{print $3}')
-  if [ "${gt_items:-0}" -gt 10 ] || [ "${gt_pct:-0}" -gt 40 ]; then
-    gotcha="⚠️${gt_items}条/${gt_pct}%"
-  else
-    gotcha="✅"
-  fi
 
   # ── Code Quality checks (scripts/ + assets/可执行文件) — L3/L7 automated subset ──
   skill_dir=$(dirname "$f")
@@ -181,9 +188,10 @@ fi
   code_issues=""
 
   # Build scan targets: scripts/ + assets/*.js + assets/*.py
+  # 排除当前审计器自身：它包含用于匹配 eval/except/debug 的规则字面量，不能作为被审计代码误报。
   scan_files=""
   if [ -d "$scripts_dir" ]; then
-    scan_files=$(find "$scripts_dir" -type f \( -name '*.py' -o -name '*.sh' \) 2>/dev/null || true)
+    scan_files=$(find "$scripts_dir" -type f \( -name '*.py' -o -name '*.sh' \) ! -path "$SCRIPT_DIR/skill-audit.sh" 2>/dev/null || true)
   fi
   if [ -d "$assets_dir" ]; then
     assets_code=$(find "$assets_dir" -type f \( -name '*.py' -o -name '*.js' \) 2>/dev/null || true)
@@ -227,16 +235,54 @@ fi
     code_issues="N/A"
   fi
 
-  printf "%-20s %5d %8s %8s %8s %8s %8s %10s\n" "$name" "$lines" "$iron" "$il_diff" "$desc" "$sec" "$code" "$gotcha"
+  # ── ICE-5 Closure Gate check (L10-2) ──
+  # Only triggers when SKILL.md frontmatter explicitly declares ICE: required or incident-closure: required
+  # Does NOT auto-flag based on fuzzy Chinese incident words or body-text mentions in backticks
+  ice="-"
+  # Extract frontmatter only (lines between first two --- delimiters)
+  _frontmatter=$(awk '/^---$/{n++; next} n==1{print}' "$f" 2>/dev/null || true)
+  ice_declared=$(echo "$_frontmatter" | grep -ciE 'ICE:\s*required|incident-closure:\s*required' 2>/dev/null || true)
+  if [ "${ice_declared:-0}" -gt 0 ]; then
+    # Look for closure_check/gate/quality check scripts
+    closure_script=""
+    for _pattern in 'closure_check*' '*gate*' '*quality*' '*audit*'; do
+      _found=$(find "$skill_dir/scripts" -type f -name "$_pattern" 2>/dev/null | head -1 || true)
+      if [ -n "$_found" ]; then
+        closure_script="$_found"
+        break
+      fi
+    done
+    if [ -z "$closure_script" ]; then
+      ice="❌无门"
+      skill_ok=false
+    else
+      # Try to run it if it's a shell script; verify exit 0
+      case "$closure_script" in
+        *.sh)
+          if bash "$closure_script" --self-check >/dev/null 2>&1 || bash "$closure_script" >/dev/null 2>&1; then
+            ice="✅"
+          else
+            ice="❌退出非0"
+            skill_ok=false
+          fi
+          ;;
+        *)
+          ice="✅有门"
+          ;;
+      esac
+    fi
+  fi
+
+  printf "%-20s %5d %8s %8s %8s %8s %8s %8s %6s\n" "$name" "$lines" "$iron" "$il_diff" "$desc" "$sec" "$code" "$gotcha" "$ice"
 
   # Show code issues in verbose mode
   if [ "$VERBOSE" = true ] && [ -n "$code_issues" ] && [ "$code_issues" != "-" ] && [ "$code_issues" != "N/A" ]; then
     echo "    └─ CODE issues: $code_issues"
   fi
 
-  if [ "$skill_ok" = true ] && [ "$sec_hits" -eq 0 ] && [ "$code" != "❌" ]; then
+  if [ "$skill_ok" = true ] && [ "$sec_hits" -eq 0 ] && [ "$code" != "❌" ] && [ "$ice" != "❌无门" ] && [ "$ice" != "❌退出非0" ]; then
     pass=$((pass + 1))
-  elif [ "$skill_ok" = false ] || [ "$code" = "❌" ]; then
+  elif [ "$skill_ok" = false ] || [ "$code" = "❌" ] || [ "$ice" = "❌无门" ] || [ "$ice" = "❌退出非0" ]; then
     fail=$((fail + 1))
   else
     warn=$((warn + 1))
@@ -244,37 +290,39 @@ fi
 done
 
 echo ""
-echo "━━━ Summary ━━━"
-echo "Total: $total | ✅ Pass: $pass | ⚠️ Warn: $warn | ❌ Fail: $fail"
+echo "━━━ 脚本核验摘要（全面审计证据，不单独构成审计结论）━━━"
+echo "对象: $total | ✅ 无阻断项: $pass | ⚠️ 需复核: $warn | ❌ 核验失败: $fail"
 
 if [ "$VERBOSE" = true ]; then
   echo ""
   echo "规则说明:"
   echo "  IRON:    SKILL.md 中包含 'IRON LAW' 关键词"
-  echo "  IL专:    IRON LAW 内容差异化检查（✅业务专属 / ❌套话 / ⚠️待查）"
+  echo "  IL専:    IRON LAW 内容差异化检查（✅业务专属 / ❌套话 / ⚠️待查）"
   echo "  DESC:    description 双引号单行 + 含'触发词' + 含'不适用'"
-  echo "  SEC:     不引用安全受限系统URL (hr/ehr/ov/goal等.example.com)"
+  echo "  SEC:     不引用安全受限系统URL (hr/ehr/ov/goal等内部域名)"
   echo "  LINES:   >250行为信息提示(IRON LAW豁免场景不阻断)"
   echo "  CODE:    scripts/+assets/代码扫描(L3-2 eval/L3-3 except/L3-4 debug/L3-6 shebang/L7-5 gitignore/L7-6 artifacts)"
+  echo "  GOTCHA:  Gotchas/踩坑段膨胀检测(L1-8/AP-34): 条目>10 或 占全文>40% 告警——提示按分层处置下沉到 troubleshooting.md"
+  echo "  ICE:     SKILL.md标ICE:required时须有closure_check/gate/quality脚本且运行退出0; 未标记则不检查"
 fi
 
-# ── 完整 53 项 10 层审计清单（每次都打印）──
+# ── 全面审计的 55 项 10 层逐项清单（每次都打印）──
 echo ""
-echo "━━━ 完整 10 层审计清单（53项，逐项确认后再发布）━━━"
+echo "━━━ 全面审计：10层55项逐项清单（逐项确认后再发布）━━━"
 echo ""
 echo "【L1 文档结构】(8项, 5可自动化)"
 echo "  [ ] L1-1  IRON LAW: frontmatter后第一位, 业务专属; 无高频风险可不写"
-echo "  [ ] L1-2  description: 单行无emoji+触发词+不适用 | 无禁止词 | ≤10个触发词"
+echo "  [ ] L1-2  description: 单行无emoji+触发词+不适用 | 无禁止词 | 触发范围与定位匹配"
 echo "  [ ] L1-3  intro: 三段式有emoji≠description, tags≥6; SKILL.md无intro字段"
 echo "  [ ] L1-4  name: 小写+数字+连字符, 与目录名完全一致"
 echo "  [ ] L1-5  行数≤300; 超限不直接判红,先评估能否拆分而不降效果,做不到则保留超行数视为通过(IRON LAW 5/AP-1)"
 echo "  [ ] L1-6  references/索引: 所有文件存在+SKILL.md有索引"
 echo "  [ ] L1-7  版本历史不入SKILL.md: 只留1行版本号+CHANGELOG链接 (AP-33)"
-echo "  [ ] L1-8  Gotchas未膨胀: 踩坑段###条目≤10且占全文≤40%; 超标按分层处置删/上浮/下沉到troubleshooting.md (AP-34; 同L1-5信息告警不直接判红)"
+echo "  [ ] L1-8  Gotchas未膨胀: 踩坑段条目≤10且占全文≤40%; 超标按分层处置(删除/上浮/下沉)到troubleshooting.md (AP-34)"
 echo ""
 echo "【L2 架构一致性】(5项, 2可自动化)"
 echo "  [ ] L2-1  逻辑冲突: 新旧规则不矛盾? 编号/数量声明与实际一致? 因果闭环"
-echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~34 | 指令可yes/no验证"
+echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~36 | 指令可yes/no验证"
 echo "  [ ] L2-3  跨章节一致: 原则↔AP↔事故三处对应? 联动表/正文无矛盾?"
 echo "  [ ] L2-4  交互一致: 多模式/分支流程描述不矛盾"
 echo "  [ ] L2-5  版本号: 改动幅度与版本号匹配"
@@ -289,11 +337,12 @@ echo "  [ ] L3-6  Shell脚本有shebang+set-euo (AP-17)"
 echo "  [ ] L3-7  硬编码: 脚本固定值已参数化"
 echo "  [ ] L3-8  功能退化: 改动未破坏已有功能"
 echo ""
-echo "【L4 跨文件一致性】(4项, 1可自动化)"
+echo "【L4 跨文件一致性】(5项, 1可自动化)"
 echo "  [ ] L4-1  模板双源: 同一内容不在SKILL.md和references/各存一份"
 echo "  [ ] L4-2  信息冗余: 清单条目未被正文流程自动覆盖"
 echo "  [ ] L4-3  共享模式一致: 多脚本共享的utils/类/函数用法一致"
 echo "  [ ] L4-4  数值一致性: 跨文件尺寸/字号/坐标/色值统一(viewBox/font-size/hex/间距)"
+echo "  [ ] L4-5  附件职责唯一: 同一主题不在templates/和references/同时存在功能等价文件 (AP-36)"
 echo ""
 echo "【L5 文档↔代码对齐】(3项, 2可自动化, scripts/+test-output参考实现)"
 echo "  [ ] L5-1  参数表一致: SKILL.md/references中CLI参数与脚本实际一致"
@@ -315,6 +364,7 @@ echo "  [ ] L7-6  无平台产物: .DS_Store/Thumbs.db/__pycache__已排除"
 echo ""
 echo "【L8 安全合规】(4项, 3可自动化)"
 echo "  [ ] L8-1  安全扫描: 无appkey/AK/SK/cookie | 无组织/人才/C4 | 无受限系统 | 无真实MIS"
+echo "  [ ] L8-2  内部API: SSO方案确定+无硬编码凭据"
 echo "  [ ] L8-3  frontmatter/metadata无真实MIS (AP-21)"
 echo "  [ ] L8-4  _meta.json含凭据已.skillignore排除 (AP-22)"
 echo ""
@@ -327,12 +377,17 @@ echo "  [ ] L9-5  大文件截断: 读取/输出有字数/行数上限 (AP-15)"
 echo "  [ ] L9-6  路径安全: 用os.path.splitext而非字符串替换 (AP-30)"
 echo "  [ ] L9-7  资源遍历上限: 遍历循环有行数/条数上限 (AP-31)"
 echo ""
-echo "【L10 内容质量】(6项, 1可自动化)"
+echo "【L10 内容质量】(6项, 2可自动化)"
 echo "  [ ] L10-1 可验证性: 指令可yes/no判断"
-echo "  [ ] L10-2 AP清零: 无AP-1~34反模式"
+echo "  [ ] L10-2 AP清零: 无AP-1~37反模式; 标ICE:required时须有closure_check.*或等价质量门且运行退出0"
 echo "  [ ] L10-3 文案质量: 无错别字/歧义/矛盾"
-echo "  [ ] L10-4 已知局限: 有##已知局限段, 诚实声明"
+echo "  [ ] L10-4 已知局限: 每条含三要素(能力边界→触发条件→降级路径); P/D/E分类标注; 同类合并; ≤3条; 重要性降序(三维:不可逆性/发生概率/影响范围); 非硬伤不收入; 无降级路径=AP-37"
 echo "  [ ] L10-5 停滞检测: 含循环/迭代/Cron的Skill有stale_count机制"
 echo "  [ ] L10-6 边缘输入覆盖: 极短/极长/空输入/非预期语言等边界条件有处理指引或在已知局限中声明"
 echo ""
-echo "全部确认后再进入发布流程。"
+echo "以上仅为脚本核验证据；必须与其余审计判断合并，逐项完成55项全面审计后，才能进入发布流程。"
+
+# 审计发现阻断项必须以非零退出码传递给调用方；否则 ICE 无门会显示失败却仍被流水线放行。
+if [ "$fail" -gt 0 ]; then
+  exit 1
+fi
