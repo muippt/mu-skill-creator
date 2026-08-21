@@ -217,7 +217,7 @@ L3：每主题一文件，超100行加索引
 > **用户态数据隔离**：本地已安装列表/用户偏好/快照/推荐历史等个性化文件**禁止随Skill发布**，必须`.skillignore`排除+SKILL.md声明"首次使用自动生成"(根因:发布者数据污染下载用户行为)
 > **正确做法**：Skill只写"运行时现读"指令(contentId/知识库链接)，内容不进Skill。违反=安全泄密+发布拦截
 
-## §7 Anti-Pattern 清单(AP-1~36)
+## §7 Anti-Pattern 清单(AP-1~37)
 
 > 完整说明+修复示例见[references/quality-gates.md](references/quality-gates.md)。每条标注根因事故和对应的设计原则。
 
@@ -246,12 +246,13 @@ L3：每主题一文件，超100行加索引
 | 21 | frontmatter含真实MIS | 删除metadata块 | 公开Skill暴露发布者MIS | §6安全 |
 | 22 | _meta.json含凭据未排除 | .skillignore排除 | 打包含真实appkey | §6安全 |
 
-> AP-23~32: 代码质量反模式(eval/exec/异常宽度/调试残留/废弃API/契约不一致/import不匹配/无fallback/路径替换/遍历无上限/.gitignore缺失)，详见[references/quality-gates.md](references/quality-gates.md)
-> AP-33: SKILL.md留版本历史——版本历史是溯源信息不是执行指令，占行数挤占注意力预算却无任何生成/路由作用。修复：SKILL.md只留1行版本号+CHANGELOG.md链接，历史详情移到references/CHANGELOG.md。根因：mu-visual-card v12.6版本历史占35行。对应§3决策1(三层模型控制context膨胀)
-> AP-34: Gotchas/踩坑记录堆积膨胀——Gotchas从"反直觉事实速查"退化成"逐条事故日志"(现象→根因→修复完整叙述)，条目/行数失控占据L2主文件。它是AP-33的同构兄弟：都把"溯源/调试类信息"堆进主文件，占注意力预算却不参与生成/路由/决策。修复按**分层处置**(见§5阶段4决策树)：结论已被IRON LAW/工作流覆盖的直接删(=AP-14冗余)；"该怎么做"的操作结论上浮固化进对应阶段；"某模板/环境的实现坑"下沉到references/troubleshooting.md，主文件只留"症状→查阅"索引。判据一句话:常规执行时需读它=上浮，只在改特定东西时才需=下沉，别处已说=删。根因：mu-redskill-intro v5.5，27条Gotchas占389行/全文66%，主文件593行。对应§3决策1(三层模型控制context膨胀)+§1失效3(规则膨胀)
-> AP-35: 事故仅记录未闭环——事故后只在references/Gotchas记录现象根因，未将修复落点进入工作流/脚本/checklist，ICE-5五字段(触发步骤/强制点/失败行为/运行证据/失败后动作)未全覆盖。修复：默认动作进工作流、自动校验进脚本或已有checklist、失败即停成为出口条件、证据进入审计输出；根因/对应原则写抽象描述。根因：事故复发因仅记录未工程化。对应§4防御10
-> AP-36: 附件文档职责重叠——同一主题（如"推广文章怎么写"）在templates/和references/同时存在功能等价文件，版本不同步导致新规则只更新了一份、旧份仍在误导。修复：合并为唯一权威文件（通常在references/），删除或标DEPRECATED另一份；references/内多文件涉及同一规则时指定唯一owner文件，其余只保留"详见XX"索引。根因：mu-wechat-typeset的templates/下3个文件与references/skill-promo-template.md功能重叠，新增规则只更新了后者，前者过时引用了不存在的CLI参数。对应§1失效2(规则冲突)+§3决策1(三层模型)
-> AP-37: 已知局限膨胀/无降级路径——条目只说"做不到"不给"怎么办"，或同一能力边界拆成多条场景变体，或将设计取舍/待办当硬伤收入。AP-33/34同构兄弟。修复按三要素重写并按P/D/E合并同类项,上限**3条**,按重要性降序(三维评价:①不可逆性②发生概率③影响范围;入选Top3须不可逆性或影响范围≥高且发生概率≥中;可逆+低频→下沉工作流)。判据三问:①读者看完知道遇到时该做什么=合格;②能通过改设计消除吗?能→不是硬伤,删除或下沉;③三维评价是否够格?不够→下沉。根因：mu-github-publisher v2.6,21条6756字,17条无降级路径,6条同一能力边界的变体,3条平台CLI限制可合并为1条→实际硬伤仅3条。对应§4防御9+§1失效3
+| 23~32 | 代码质量反模式(eval/exec/异常宽度/调试残留/废弃API/契约不一致/import不匹配/无fallback/路径替换/遍历无上限/.gitignore缺失) | 详见quality-gates.md | 多个Skill代码评审 | §1失效1 |
+| 33 | SKILL.md留版本历史 | 只留1行版本号+CHANGELOG链接 | mu-visual-card v12.6版本历史35行 | §3决策1 |
+| 34 | Gotchas堆积膨胀 | 分层处置:删/上浮/下沉到troubleshooting.md | mu-redskill-intro v5.5 27条占66% | §3决策1+§1失效3 |
+| 35 | 事故仅记录未闭环(ICE-5) | 修复必落进工作流/脚本/checklist | 事故复发因仅记录未工程化 | §4防御10 |
+| 36 | 附件文档职责重叠 | 合并为唯一权威文件,其余标DEPRECATED | mu-wechat-typeset templates/与references/重叠 | §1失效2+§3决策1 |
+| 37 | 已知局限膨胀/无降级路径 | 三要素重写+P/D/E合并+≤3条+三维重要性 | mu-github-publisher 21条6756字→实际3条 | §4防御9+§1失效3 |
+
 > 失效模式→AP: 遗忘→3/5/8/17/25 | 冲突→4/14/16/18/27/36 | 膨胀→1/9/13/15/20/31/33/34/37 | 跨模式→6/7/10/11/12/19/23/24/26/28/29/30/32 | 闭环缺失→35
 
 ## §8 全面审计：10层55项模型
@@ -295,7 +296,7 @@ L3：每主题一文件，超100行加索引
 
 | 文件 | 说明 |
 |------|------|
-| [quality-gates.md](references/quality-gates.md) | AP-1~36完整说明+10层审计模型+Eval+触发词优化 |
+| [quality-gates.md](references/quality-gates.md) | AP-1~37完整说明+10层审计模型+Eval+触发词优化 |
 | [publish-workflow.md](references/publish-workflow.md) | 组织四步发布(安全→校验→打包→push→验证) |
 | [collaboration-guide.md](references/collaboration-guide.md) | 推荐联动(mu-dev-workflow+mu-skill-shrimp) | [evals.json](evals/evals.json) | Eval测试用例示范 |
 | [CHANGELOG.md](references/CHANGELOG.md) | 版本历史记录 |
