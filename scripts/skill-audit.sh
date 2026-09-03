@@ -1,7 +1,7 @@
 #!/bin/bash
 # skill-audit.sh — mu-Skill 结构健康检查工具
 # 所属: mu-skill-creator Skill（scripts/skill-audit.sh）
-# 规则来源: mu-skill-creator 10层审计模型（55项，可脚本核验子集）
+# 规则来源: mu-skill-creator 10层审计模型（56项，可脚本核验子集）
 #
 # 用法:
 #   bash skill-audit.sh                    # 扫描全部 Skills
@@ -130,6 +130,38 @@ for entry in "${SKILLS[@]}"; do
     gotcha="⚠️${gt_items}条/${gt_pct}%"
   elif [ "${gt_items:-0}" -eq 0 ]; then
     gotcha="-"
+  fi
+
+  # L1-9: markdown 表格被空行截断机检（AP-39）— 表格块间仅隔一个空行且新块首行后无表头分隔行
+  tbl_hits=""
+  tbl_hits=$(python3 -c "
+import sys,re
+def trow(l):
+    s=l.strip()
+    return s.startswith('|') and s.endswith('|') and s.count('|')>=2
+def sep(l):
+    return bool(re.match(r'^\|[\s:\-|]+\|', l.strip()))
+hits=[]
+for path in sys.argv[1:]:
+    lines=open(path,encoding='utf-8').read().split('\n')
+    blocks=[];i=0;n=len(lines)
+    while i<n:
+        if trow(lines[i]):
+            j=i
+            while j+1<n and trow(lines[j+1]):
+                j+=1
+            blocks.append((i,j));i=j+1
+        else:
+            i+=1
+    for k in range(1,len(blocks)):
+        s=blocks[k][0];pe=blocks[k-1][1]
+        if s-pe==2 and not (s+1<n and sep(lines[s+1])):
+            hits.append(str(s+1))
+print(','.join(hits))
+" "$f" 2>/dev/null) || tbl_hits=""
+  if [ -n "$tbl_hits" ]; then
+    gotcha="❌TBL截断L${tbl_hits}"
+    skill_ok=false
   fi
 
   # IRON LAW check — 存在性（无 IRON LAW 为警告而非强制失败）
@@ -305,14 +337,15 @@ if [ "$VERBOSE" = true ]; then
   echo "  LINES:   >250行为信息提示(IRON LAW豁免场景不阻断)"
   echo "  CODE:    scripts/+assets/代码扫描(L3-2 eval/L3-3 except/L3-4 debug/L3-6 shebang/L7-5 gitignore/L7-6 artifacts)"
   echo "  GOTCHA:  Gotchas/踩坑段膨胀检测(L1-8/AP-34): 条目>10 或 占全文>40% 告警——提示按分层处置下沉到 troubleshooting.md"
+  echo "  TBL:     markdown表格被空行截断检测(L1-9/AP-39): 表格块间仅隔空行且新块无表头分隔行=❌, 修复=删空行或给新块加表头"
   echo "  ICE:     SKILL.md标ICE:required时须有closure_check/gate/quality脚本(静态检查存在性+shebang, 执行验证请手动运行该脚本); 未标记则不检查"
 fi
 
-# ── 全面审计的 55 项 10 层逐项清单（每次都打印）──
+# ── 全面审计的 56 项 10 层逐项清单（每次都打印）──
 echo ""
-echo "━━━ 全面审计：10层55项逐项清单（逐项确认后再发布）━━━"
+echo "━━━ 全面审计：10层56项逐项清单（逐项确认后再发布）━━━"
 echo ""
-echo "【L1 文档结构】(8项, 5可自动化)"
+echo "【L1 文档结构】(9项, 6可自动化)"
 echo "  [ ] L1-1  IRON LAW: frontmatter后第一位, 业务专属; 无高频风险可不写"
 echo "  [ ] L1-2  description: 单行无emoji+触发词+不适用 | 无禁止词 | 触发范围与定位匹配"
 echo "  [ ] L1-3  intro: 三段式有emoji≠description, tags≥6; SKILL.md无intro字段"
@@ -321,10 +354,11 @@ echo "  [ ] L1-5  行数≤300; 超限不直接判红,先评估能否拆分而�
 echo "  [ ] L1-6  references/索引: 所有文件存在+SKILL.md有索引"
 echo "  [ ] L1-7  版本历史不入SKILL.md: 只留1行版本号+CHANGELOG链接 (AP-33)"
 echo "  [ ] L1-8  Gotchas未膨胀: 踩坑段条目≤10且占全文≤40%; 超标按分层处置(删除/上浮/下沉)到troubleshooting.md (AP-34)"
+echo "  [ ] L1-9  表格连续性: markdown表格无空行截断; 跨表格必须空行+完整新表头 (AP-39)"
 echo ""
 echo "【L2 架构一致性】(5项, 2可自动化)"
 echo "  [ ] L2-1  逻辑冲突: 新旧规则不矛盾? 编号/数量声明与实际一致? 因果闭环"
-echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~38 | 指令可yes/no验证"
+echo "  [ ] L2-2  阶段编号+入口/出口 | 无AP-1~39 | 指令可yes/no验证"
 echo "  [ ] L2-3  跨章节一致: 原则↔AP↔事故三处对应? 联动表/正文无矛盾?"
 echo "  [ ] L2-4  交互一致: 多模式/分支流程描述不矛盾"
 echo "  [ ] L2-5  版本号: 改动幅度与版本号匹配"
@@ -381,13 +415,13 @@ echo "  [ ] L9-7  资源遍历上限: 遍历循环有行数/条数上限 (AP-31)
 echo ""
 echo "【L10 内容质量】(6项, 2可自动化)"
 echo "  [ ] L10-1 可验证性: 指令可yes/no判断"
-echo "  [ ] L10-2 AP清零: 无AP-1~38反模式; 标ICE:required时须有closure_check.*或等价质量门且运行退出0"
+echo "  [ ] L10-2 AP清零: 无AP-1~39反模式; 标ICE:required时须有closure_check.*或等价质量门且运行退出0"
 echo "  [ ] L10-3 文案质量: 无错别字/歧义/矛盾"
 echo "  [ ] L10-4 已知局限: 每条含三要素(能力边界→触发条件→降级路径); P/D/E分类标注; 同类合并; ≤3条; 重要性降序(三维:不可逆性/发生概率/影响范围); 非硬伤不收入; 无降级路径=AP-37"
 echo "  [ ] L10-5 停滞检测: 含循环/迭代/Cron的Skill有stale_count机制"
 echo "  [ ] L10-6 边缘输入覆盖: 极短/极长/空输入/非预期语言等边界条件有处理指引或在已知局限中声明"
 echo ""
-echo "以上仅为脚本核验证据；必须与其余审计判断合并，逐项完成55项全面审计后，才能进入发布流程。"
+echo "以上仅为脚本核验证据；必须与其余审计判断合并，逐项完成56项全面审计后，才能进入发布流程。"
 
 # 审计发现阻断项必须以非零退出码传递给调用方；否则 ICE 无门会显示失败却仍被流水线放行。
 if [ "$fail" -gt 0 ]; then
