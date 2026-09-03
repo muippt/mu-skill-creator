@@ -257,26 +257,21 @@ for entry in "${SKILLS[@]}"; do
       ice="❌无门"
       skill_ok=false
     else
-      # ⚖️ Execution is opt-in: default is a static existence check.
-      # Run the closure script only when AUDIT_RUN_CLOSURE=1 is set, so this
-      # audit tool never executes third-party scripts without explicit opt-in.
-      if [ "${AUDIT_RUN_CLOSURE:-0}" = "1" ]; then
-        case "$closure_script" in
-          *.sh)
-            if bash "$closure_script" --self-check >/dev/null 2>&1 || bash "$closure_script" >/dev/null 2>&1; then
-              ice="✅"
-            else
-              ice="❌退出非0"
-              skill_ok=false
-            fi
-            ;;
-          *)
-            ice="✅有门"
-            ;;
-        esac
-      else
-        ice="✅有门(静态)"
-      fi
+      # ⚖️ Static check only — this audit tool never executes third-party scripts.
+      # To verify a closure script actually exits 0, run it manually:
+      #   bash <skill>/scripts/closure_check.sh
+      case "$closure_script" in
+        *.sh)
+          if head -1 "$closure_script" 2>/dev/null | grep -q '^#!.*sh'; then
+            ice="✅有门(静态)"
+          else
+            ice="⚠️有门但无shebang"
+          fi
+          ;;
+        *)
+          ice="✅有门(静态)"
+          ;;
+      esac
     fi
   fi
 
@@ -310,7 +305,7 @@ if [ "$VERBOSE" = true ]; then
   echo "  LINES:   >250行为信息提示(IRON LAW豁免场景不阻断)"
   echo "  CODE:    scripts/+assets/代码扫描(L3-2 eval/L3-3 except/L3-4 debug/L3-6 shebang/L7-5 gitignore/L7-6 artifacts)"
   echo "  GOTCHA:  Gotchas/踩坑段膨胀检测(L1-8/AP-34): 条目>10 或 占全文>40% 告警——提示按分层处置下沉到 troubleshooting.md"
-  echo "  ICE:     SKILL.md标ICE:required时须有closure_check/gate/quality脚本; 默认静态检查存在性, 设 AUDIT_RUN_CLOSURE=1 才真实执行并验退出码; 未标记则不检查"
+  echo "  ICE:     SKILL.md标ICE:required时须有closure_check/gate/quality脚本(静态检查存在性+shebang, 执行验证请手动运行该脚本); 未标记则不检查"
 fi
 
 # ── 全面审计的 55 项 10 层逐项清单（每次都打印）──

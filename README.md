@@ -124,7 +124,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v4.1.2 |
+| Version | v4.1.3 |
 
 ---
 
@@ -197,6 +197,6 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v4.1.2 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v4.1.3 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **What's New in v4.1.2**: ICE closure-script execution is now opt-in (`AUDIT_RUN_CLOSURE=1`); the audit script performs a static existence check by default and no longer executes third-party skill scripts without explicit opt-in.
+> **What's New in v4.1.3**: The ICE closure check is now purely static — `skill-audit.sh` verifies script existence and shebang, and never executes third-party skill scripts; run closure scripts manually to verify exit codes.
