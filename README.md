@@ -26,7 +26,7 @@
 
 | Scenario | What you say | What happens |
 |----------|-------------|--------------|
-| 🆕 Create a new skill from scratch | "Create a skill that converts Markdown to articles" | Full 8-stage gated workflow: requirements → planning → L1/L2/L3 authoring → audit → publish |
+| 🆕 Create a new skill from scratch | "Create a skill that converts Markdown to articles" | Full 8-stage gated workflow: requirements → planning → L1/L2/L3 authoring → audit → handoff |
 | 🔍 Audit an existing skill | "Run quality audit on my-skill" | 55-item checklist across 10 layers, with automated shell scan + human-judgment items |
 | 🚫 Fix anti-patterns | "Check my skill for anti-patterns" | AP-1 through AP-38 catalog scanned, each flagged with root cause and fix |
 | 🎯 Optimize trigger words | "My skill isn't activating — help me fix the trigger" | Trigger word analysis: banned-word scan, coverage test, pushy-principle check |
@@ -67,7 +67,7 @@ New in v4.1: AP-35 (incident closure / ICE-5), AP-36 (attachment file overlap), 
 
 #### Automated Audit Script
 
-`skill-audit.sh` performs batch scanning with a single command. Checks IRON LAW placement, description format, security risks, line count, code quality, broken references, and more — before every publish.
+`skill-audit.sh` performs batch scanning with a single command. Checks IRON LAW placement, description format, security risks, line count, code quality, broken references, and more — before every handoff.
 
 #### Stall Detection Rules
 
@@ -75,7 +75,7 @@ Built-in quantitative signals (stale_count, time limits, failure thresholds) pre
 
 #### Security-First Design
 
-Hard rules against credential leakage, personnel data exposure, and restricted system access. Automated scanning catches violations before publish. `.skillignore` ensures user-state files never enter version control.
+Hard rules against credential leakage, personnel data exposure, and restricted system access. Automated scanning catches violations before handoff. `.skillignore` ensures user-state files never enter version control.
 
 ---
 
@@ -89,7 +89,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Context-aware loading | ✅ 3-layer (L1/L2/L3) | ❌ Single file | ❌ | Varies |
 | Gated workflow | ✅ 8 stages with entry/exit | ❌ | ❌ | Rare |
 | Stall detection | ✅ Quantitative signals | ❌ | ❌ | ❌ |
-| Security scanning | ✅ Pre-publish | Manual only | ❌ | Varies |
+| Security scanning | ✅ Pre-handoff | Manual only | ❌ | Varies |
 | Trigger optimization | ✅ 10+10 test, coverage check | ❌ | ❌ | ❌ |
 | Known limitation standard | ✅ 3-element + P/D/E + ≤3 items | ❌ | ❌ | ❌ |
 
@@ -100,12 +100,12 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Workflow | Scenario | Trigger |
 |----------|----------|---------|
 | Create new skill | Building a skill from scratch | "Create a skill that does X" |
-| Audit existing skill | Quality check before publish | "Audit my-skill for quality" |
+| Audit existing skill | Quality check before handoff | "Audit my-skill for quality" |
 | Fix anti-patterns | Diagnosing skill degradation | "Check my skill for anti-patterns" |
 | Optimize triggers | Skill not activating reliably | "My skill isn't triggering" |
 | Refactor bloated skill | SKILL.md exceeding 300 lines | "Help me slim down my SKILL.md" |
 | Batch scan | Multi-skill health check | `bash scripts/skill-audit.sh skill-a skill-b` |
-| Publish | Final security scan + package | "Publish my-skill" |
+| Handoff | Final security scan + package (publishing is delegated to dedicated tools) | "Hand off my-skill" |
 
 ---
 
@@ -124,7 +124,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v4.1.4 |
+| Version | v4.1.5 |
 
 ---
 
@@ -162,7 +162,7 @@ bash scripts/skill-audit.sh --verbose        # detailed output
 - **No personal data** — Names, user IDs, organizational info, and sensitive personnel data are prohibited in all skill files.
 - **Restricted system blocklist** — Skills cannot call APIs for HR, talent, or other sensitive internal systems.
 - **User-state isolation** — Local preferences, snapshots, and recommendation history must be excluded from published skill packages via `.skillignore`.
-- **Automated security scanning** — `skill-audit.sh` checks for credential leaks, PII exposure, and restricted system references before every publish.
+- **Automated security scanning** — `skill-audit.sh` checks for credential leaks, PII exposure, and restricted system references before every handoff.
 - **Local execution** — Everything runs locally. No telemetry, no data collection, no cloud calls.
 
 ---
@@ -197,6 +197,6 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v4.1.4 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v4.1.5 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **What's New in v4.1.4**: Hardened the audit script against security-scanner false positives (pattern literals rewritten with character classes, zero functional change); ICE closure check remains purely static.
+> **What's New in v4.1.5**: Stage 8 is now a handoff gate — the skill stops at packaging and delegates publishing to dedicated tools, aligning with its declared scope; audit pattern literals use character classes (zero functional change); ICE closure check remains purely static.

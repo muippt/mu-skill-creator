@@ -84,7 +84,7 @@
 ### AP-16：SKILL.md 保留 intro 字段
 **症状**：frontmatter 里写了 `intro:` 字段
 **后果**：intro 内容会随 Skill 加载进入 context，同时 Skill 市场管理更难
-**修复**：intro 只通过 `skill-cli push --intro` 管理，SKILL.md 不保留
+**修复**：intro 只由平台 CLI 单独管理，SKILL.md 不保留
 
 ### AP-17：Shell 无 shebang/set -euo
 **症状**：脚本第一行不是 shebang，或缺少 `set -euo pipefail`
