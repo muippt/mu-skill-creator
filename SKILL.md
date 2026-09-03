@@ -1,6 +1,6 @@
 ---
 name: mu-skill-creator
-version: 4.1.5
+version: 4.1.6
 display_name: Skill创作发明家
 description: "Skill创建与质量门控，含55项10层审计模型。触发词：创建skill、skill创建、skill审计、质量审计。不适用：skill发布、生态体检（用mu-skill-auditor）"
 tags: Skill开发,质量门控,交付流程,三层模型,组织规范,工作流
@@ -239,7 +239,7 @@ L3：每主题一文件，超100行加索引
 | 13 | 无数据量限制 | 加limit/截断/分页 | 小雷达91条串行查询超时 | §3决策1 |
 | 14 | 冗余重复提示 | 同一指令只写一处 | SKILL.md+references两处写同一规则 | §1失效2 |
 | 15 | 大文件无截断 | 加字数/行数上限 | read大文件context溢出 | §3决策1 |
-| 16 | SKILL.md留intro | intro只通过push管理 | 修改SKILL.md的intro线上没同步 | §1失效2 |
+| 16 | SKILL.md留intro | intro由平台CLI单独管理 | 修改SKILL.md的intro线上没同步 | §1失效2 |
 | 17 | Shell无shebang/set-euo | 加shebang+安全开关 | 脚本静默失败Agent以为成功 | §4防御7 |
 | 18 | 重复造轮子 | bundle到scripts/复用 | 多Skill各自SSO换票改一处漏一处 | §1失效2 |
 | 19 | 规则只有MUST没WHY | 附WHY解释意图 | Agent死记禁止令遇边界选错 | §4防御5 |
@@ -247,13 +247,22 @@ L3：每主题一文件，超100行加索引
 | 21 | frontmatter含真实内部账号 | 删除metadata块 | 公开Skill暴露发布者账号 | §6安全 |
 | 22 | _meta.json含凭据未排除 | .skillignore排除 | 打包含真实平台密钥 | §6安全 |
 
-| 23~32 | 代码质量反模式(eval/exec/异常宽度/调试残留/废弃API/契约不一致/import不匹配/无fallback/路径替换/遍历无上限/.gitignore缺失) | 详见quality-gates.md | 多个Skill代码评审 | §1失效1 |
-| 33 | SKILL.md留版本历史 | 只留1行版本号+CHANGELOG链接 | mu-visual-card v12.6版本历史35行 | §3决策1 |
-| 34 | Gotchas堆积膨胀 | 分层处置:删/上浮/下沉到troubleshooting.md | mu-redskill-intro v5.5 27条占66% | §3决策1+§1失效3 |
-| 35 | 事故仅记录未闭环(ICE-5) | 修复必落进工作流/脚本/checklist | 事故复发因仅记录未工程化 | §4防御10 |
-| 36 | 附件文档职责重叠 | 合并为唯一权威文件,其余标DEPRECATED | mu-wechat-typeset templates/与references/重叠 | §1失效2+§3决策1 |
-| 37 | 已知局限膨胀/无降级路径 | 三要素重写+P/D/E合并+≤3条+三维重要性 | mu-github-publisher 21条6756字→实际3条 | §4防御9+§1失效3 |
-| 38 | AP描述膨胀(段落代替索引) | AP清单用表格每条一行,完整描述留references | mu-skill-creator v4.1 AP-33~37自身用blockquote | §3决策1+§1失效3 |
+| 23 | eval/exec执行用户输入 | 用AST白名单替代eval/exec | 多个Skill代码评审 | §1失效1 |
+| 24 | 异常捕获过宽 | 捕获具体异常类型;re-raise或log | 多个Skill代码评审 | §1失效1 |
+| 25 | 调试残留 | 删除pdb/breakpoint/if False | 多个Skill代码评审 | §1失效1 |
+| 26 | 废弃API调用 | 替换为文档推荐新API | 多个Skill代码评审 | §1失效1 |
+| 27 | API契约不一致 | 校验调用方与定义方签名匹配 | 多个Skill代码评审 | §1失效1 |
+| 28 | import与requirements不匹配 | 同步requirements.txt | 多个Skill代码评审 | §1失效1 |
+| 29 | 可选依赖无fallback | try/except ImportError+降级方案 | 多个Skill代码评审 | §1失效1 |
+| 30 | 路径操作字符串替换 | 用os.path.splitext处理路径 | 多个Skill代码评审 | §1失效1 |
+| 31 | 资源遍历无上限 | 加max/分页/采样上限 | 多个Skill代码评审 | §1失效1 |
+| 32 | .gitignore缺失 | 创建.gitignore排除产物 | 多个Skill代码评审 | §1失效1 |
+| 33 | SKILL.md留版本历史 | 只留1行版本号+CHANGELOG链接 | mu-visual-card版本历史35行 | §3决策1 |
+| 34 | Gotchas堆积膨胀 | 分层处置:删/上浮/下沉 | mu-redskill-intro踩坑段占66% | §3决策1 |
+| 35 | 事故仅记录未闭环(ICE-5) | 修复落进工作流/脚本/checklist | 事故复发因仅记录未工程化 | §4防御10 |
+| 36 | 附件文档职责重叠 | 合并唯一权威,其余标DEPRECATED | templates/与references/重叠 | §1失效2 |
+| 37 | 已知局限膨胀/无降级路径 | 三要素+P/D/E+≤3条+三维重要性 | 21条局限仅3条为真硬伤 | §4防御9 |
+| 38 | AP描述膨胀(段落代替索引) | 表格每条一行,完整描述留references | AP清单自身用大段描述 | §3决策1 |
 
 > 失效模式→AP: 遗忘→3/5/8/17/25 | 冲突→4/14/16/18/27/36 | 膨胀→1/9/13/15/20/31/33/34/37/38 | 跨模式→6/7/10/11/12/19/23/24/26/28/29/30/32 | 闭环缺失→35
 

@@ -124,7 +124,7 @@ v4.1 新增：AP-35（事故闭环 / ICE-5）、AP-36（附件文件职责重叠
 | 输出格式 | SKILL.md + 参考文档 + 自动审计报告 |
 | 行数预算 | L2 ≤ 300 行（官方建议 500，收紧至 300 留余量） |
 | IRON LAW | 业务专属约束，上限 6 条 |
-| 版本 | v4.1.5 |
+| 版本 | v4.1.6 |
 
 ---
 
@@ -197,6 +197,6 @@ bash scripts/skill-audit.sh --verbose        # 详细输出
 
 ---
 
-> **版本**：v4.1.5 · [在线主页](https://muippt.github.io/mu-skill-creator/) · [发布历史](https://github.com/muippt/mu-skill-creator/releases)
+> **版本**：v4.1.6 · [在线主页](https://muippt.github.io/mu-skill-creator/) · [发布历史](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **v4.1.5 更新**：阶段 8 改为交付门——止步于打包，发布动作委托专用工具，与声明范围自洽；审计模式字面量改用字符类（功能零变化）；ICE 闭环检查保持纯静态。
+> **v4.1.6 更新**：自洽性修复——AP 索引按自身 AP-38 规则整改（AP-23~32 拆为每条一行、AP-33~38 压缩为索引级），工作流措辞一致性修复。

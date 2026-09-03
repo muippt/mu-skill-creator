@@ -124,7 +124,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v4.1.5 |
+| Version | v4.1.6 |
 
 ---
 
@@ -197,6 +197,6 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v4.1.5 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v4.1.6 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **What's New in v4.1.5**: Stage 8 is now a handoff gate — the skill stops at packaging and delegates publishing to dedicated tools, aligning with its declared scope; audit pattern literals use character classes (zero functional change); ICE closure check remains purely static.
+> **What's New in v4.1.6**: Dogfooding pass — the AP index now follows its own AP-38 rule (AP-23~32 expanded to one-row-per-pattern, AP-33~38 compressed to index level), wording consistency fixes across the workflow.
