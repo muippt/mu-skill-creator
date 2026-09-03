@@ -176,8 +176,9 @@ for entry in "${SKILLS[@]}"; do
     desc="❌格式"; skill_ok=false
   fi
 
-  # Security: restricted system URLs
-  sec_hits=$(grep -cE "hr\.internal-corp\.com|ehr\.internal-corp|mthr\.internal-corp|hc\.internal-corp|ov\.internal-corp|goal\.internal-corp|okr\.internal-corp|huoshui\.internal-corp|bole\.internal-corp|talent\.internal-corp|hrmdm\.internal-corp|restricted.internal.example" "$f" 2>/dev/null || true)
+  # Security: restricted system URLs (domains configurable via RESTRICTED_DOMAINS, keep generic defaults)
+  restricted_pattern="${RESTRICTED_DOMAINS:-hr\.internal\.example|okr\.internal\.example|talent\.internal\.example}"
+  sec_hits=$(grep -cE "$restricted_pattern" "$f" 2>/dev/null || true)
   if [ "$sec_hits" -gt 0 ]; then sec="⚠️${sec_hits}处"; else sec="✅"; fi
 
   # ── Code Quality checks (scripts/ + assets/可执行文件) — L3/L7 automated subset ──
@@ -363,9 +364,9 @@ echo "  [ ] L7-5  .gitignore: 有scripts/时必须存在 (AP-32)"
 echo "  [ ] L7-6  无平台产物: .DS_Store/Thumbs.db/__pycache__已排除"
 echo ""
 echo "【L8 安全合规】(4项, 3可自动化)"
-echo "  [ ] L8-1  安全扫描: 无appkey/AK/SK/cookie | 无组织/人才/C4 | 无受限系统 | 无真实MIS"
+echo "  [ ] L8-1  安全扫描: 无平台密钥/AK/SK/cookie | 无组织/人才/高敏数据 | 无受限系统 | 无真实内部账号"
 echo "  [ ] L8-2  内部API: SSO方案确定+无硬编码凭据"
-echo "  [ ] L8-3  frontmatter/metadata无真实MIS (AP-21)"
+echo "  [ ] L8-3  frontmatter/metadata无真实内部账号 (AP-21)"
 echo "  [ ] L8-4  _meta.json含凭据已.skillignore排除 (AP-22)"
 echo ""
 echo "【L9 健壮性&降级】(7项, 1可自动化)"

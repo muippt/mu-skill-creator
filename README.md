@@ -124,7 +124,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v4.1 |
+| Version | v4.1.1 |
 
 ---
 
@@ -197,6 +197,6 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v4.1 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v4.1.1 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **What's New in v4.1**: 55-item audit model (+2: L4-5 attachment uniqueness, L10-4 known limitation spec) · 38 anti-patterns (+4: AP-35 ICE-5 incident closure, AP-36 attachment overlap, AP-37 known limitation bloat, AP-38 AP description bloat) · Known limitation standard: three-element structure + P/D/E classification + ≤3 items + three-dimensional importance evaluation (irreversibility / frequency / impact scope)
+> **What's New in v4.1.1**: Removed an internal-process reference document not intended for the public repo; generalized internal terminology in the security rules section; made the audit script's restricted-domain pattern configurable via the `RESTRICTED_DOMAINS` env var. No functional changes to the audit model.

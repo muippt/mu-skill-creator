@@ -1,6 +1,7 @@
 ---
 name: mu-skill-creator
-version: 4.1.0
+version: 4.1.1
+display_name: Skill创作发明家
 description: "Skill创建与质量门控，含55项10层审计模型。触发词：创建skill、skill创建、skill审计、质量审计。不适用：skill发布、生态体检（用mu-skill-auditor）"
 tags: Skill开发,质量门控,发布流程,三层模型,组织规范,工作流
 visibility: public
@@ -206,17 +207,16 @@ L3：每主题一文件，超100行加索引
 
 ⚠️ **Confirmation Gate:发布前必须获得负责人明确的"可以发布"指令**
 
-完整流程见[references/publish-workflow.md](references/publish-workflow.md)：
-1.安全扫描(人员/凭证/内网/appkey)→ 2.frontmatter校验→ 3.打包+说明→ 4.push到 Skill 市场
+发布四步：1.安全扫描(人员/凭证/内网/平台密钥)→ 2.frontmatter校验→ 3.打包+说明→ 4.push到目标平台
 
-**出口**：Skill 市场可搜到，安全徽章双绿，简介显示三段式intro
+**出口**：目标平台可搜到，平台校验通过，简介显示三段式intro
 
 ## §6 安全硬规则
 
-> **禁止进任何Skill文件**：人才标准/组织信息/角色指南/职级定义/人员信息(姓名/MIS/empId)/C4高敏数据
-> **受限系统黑名单**(禁止调用API)：hr/ehr/mthr/hc/ov/goal/okr/huoshui/bole/talent/hrmdm.<internal-api> + internal-hr.net
+> **禁止进任何Skill文件**：人才标准/组织信息/角色指南/职级定义/人员信息(姓名/工号/账号ID)/高敏数据
+> **受限系统黑名单**(禁止调用API)：公司内部 HR/绩效/OKR/招聘等受限系统（域名运行时按环境配置，禁止硬编码进 Skill）
 > **用户态数据隔离**：本地已安装列表/用户偏好/快照/推荐历史等个性化文件**禁止随Skill发布**，必须`.skillignore`排除+SKILL.md声明"首次使用自动生成"(根因:发布者数据污染下载用户行为)
-> **正确做法**：Skill只写"运行时现读"指令(contentId/知识库链接)，内容不进Skill。违反=安全泄密+发布拦截
+> **正确做法**：Skill只写"运行时现读"指令(文档链接/ID)，内容不进Skill。违反=敏感信息泄露+发布拦截
 
 ## §7 Anti-Pattern 清单(AP-1~38)
 
@@ -244,8 +244,8 @@ L3：每主题一文件，超100行加索引
 | 18 | 重复造轮子 | bundle到scripts/复用 | 多Skill各自SSO换票改一处漏一处 | §1失效2 |
 | 19 | 规则只有MUST没WHY | 附WHY解释意图 | Agent死记禁止令遇边界选错 | §4防御5 |
 | 20 | IRON LAW照搬通用模板 | 必须含业务专属约束 | IRON LAW5条套话Agent全忽略 | §1失效3 |
-| 21 | frontmatter含真实MIS | 删除metadata块 | 公开Skill暴露发布者MIS | §6安全 |
-| 22 | _meta.json含凭据未排除 | .skillignore排除 | 打包含真实appkey | §6安全 |
+| 21 | frontmatter含真实内部账号 | 删除metadata块 | 公开Skill暴露发布者账号 | §6安全 |
+| 22 | _meta.json含凭据未排除 | .skillignore排除 | 打包含真实平台密钥 | §6安全 |
 
 | 23~32 | 代码质量反模式(eval/exec/异常宽度/调试残留/废弃API/契约不一致/import不匹配/无fallback/路径替换/遍历无上限/.gitignore缺失) | 详见quality-gates.md | 多个Skill代码评审 | §1失效1 |
 | 33 | SKILL.md留版本历史 | 只留1行版本号+CHANGELOG链接 | mu-visual-card v12.6版本历史35行 | §3决策1 |
@@ -270,7 +270,7 @@ L3：每主题一文件，超100行加索引
 | L5 | 文档↔代码对齐 | 3 | 2 | 参数表一致/功能路由完整/参考实现正确性 |
 | L6 | 依赖完整性 | 3 | 2 | import↔requirements/技术栈/fallback |
 | L7 | 文件卫生 | 6 | 5 | 僵尸/断链/孤儿/用户态/.gitignore/平台产物 |
-| L8 | 安全合规 | 4 | 3 | 安全扫描/SSO/MIS/凭据 |
+| L8 | 安全合规 | 4 | 3 | 安全扫描/SSO/内部账号/凭据 |
 | L9 | 健壮性&降级 | 7 | 1 | 降级链/确认门/子Agent/数据量/大文件/路径/遍历 |
 | L10 | 内容质量 | 6 | 2 | 可验证性/AP清零+ICE闭环/文案/已知局限(三要素+P/D/E+≤3条+重要性降序)/停滞/边缘输入 |
 | **合计** | | **55** | **29** | |
@@ -284,7 +284,7 @@ L3：每主题一文件，超100行加索引
 **L5文档↔代码**(scripts/+test-output参考实现): 🔍L5-1 参数表一致(SKILL↔CLI) | 🔍L5-2 功能路由完整(均有实现) | 👤L5-3 参考实现正确性(示例代码/模板/SVG语法正确且与文档对齐)
 **L6依赖完整性**(scripts/): 🔍L6-1 import↔requirements匹配 | 👤L6-2 技术栈表一致 | 🔍L6-3 可选依赖有fallback
 **L7文件卫生**: 🔍L7-1 僵尸文件(refs有引用) | 🔍L7-2 断链(引用均存在) | 👤L7-3 路径孤儿(改名同步) | 👤L7-4 用户态未混入 | 🔍L7-5 .gitignore(scripts/时) | 🔍L7-6 无平台产物
-**L8安全合规**: 🔍L8-1 安全扫描(appkey/MIS/C4/受限系统) | 👤L8-2 SSO方案 | 🔍L8-3 frontmatter无MIS(AP-21) | 🔍L8-4 _meta.json已排除(AP-22)
+**L8安全合规**: 🔍L8-1 安全扫描(平台密钥/内部账号/高敏数据/受限系统) | 👤L8-2 SSO方案 | 🔍L8-3 frontmatter无内部账号(AP-21) | 🔍L8-4 _meta.json已排除(AP-22)
 **L9健壮性&降级**: 👤L9-1 降级链(外部依赖有处理) | 👤L9-2 改动类→Confirm Gate | 👤L9-3 流水线→子Agent规范 | 👤L9-4 数据量限制(AP-13) | 👤L9-5 大文件截断(AP-15) | 🔍L9-6 路径安全(splitext) | 🔍L9-7 遍历上限
 **L10内容质量**: 👤L10-1 可验证性(yes/no) | 🔍L10-2 AP清零(无AP-1~38)+ICE闭环(标`ICE: required`时须有closure_check.*或等价质量门且运行退出0) | 👤L10-3 文案(无错别字) | 👤L10-4 已知局限(每条含三要素:能力边界→触发条件→降级路径;P/D/E分类标注;同类合并;≤3条;重要性降序;非硬伤不收入;AP-37) | 👤L10-5 停滞检测(stale_count) | 👤L10-6 边缘输入覆盖(极短/极长/空输入/非预期语言等边界条件是否有处理指引或在已知局限中声明)
 
@@ -299,6 +299,5 @@ L3：每主题一文件，超100行加索引
 | 文件 | 说明 |
 |------|------|
 | [quality-gates.md](references/quality-gates.md) | AP-1~38完整说明+10层审计模型+Eval+触发词优化 |
-| [publish-workflow.md](references/publish-workflow.md) | 组织四步发布(安全→校验→打包→push→验证) |
-| [collaboration-guide.md](references/collaboration-guide.md) | 推荐联动(mu-dev-workflow+mu-skill-shrimp) | [evals.json](evals/evals.json) | Eval测试用例示范 |
-| [CHANGELOG.md](references/CHANGELOG.md) | 版本历史记录 |
+| [collaboration-guide.md](references/collaboration-guide.md) | 推荐联动(mu-dev-workflow) |
+| [evals.json](evals/evals.json) | Eval测试用例示范 |

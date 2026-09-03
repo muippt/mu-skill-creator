@@ -106,17 +106,17 @@
 **后果**：IRON LAW 占了行数但激活不了任何防护，形同虚设
 **修复**：IRON LAW 必须包含该 Skill 频率最高的违规模式和业务专属约束
 
-### AP-21：frontmatter/metadata 含真实 MIS 发布
+### AP-21：frontmatter/metadata 含真实内部账号发布
 **症状**：frontmatter 中保留内部平台元数据字段（如 creator/updater/skill_id 等）
-**后果**：公开 Skill 发布后任何人均可看到发布者真实 MIS，造成个人信息暴露
+**后果**：公开 Skill 发布后任何人均可看到发布者真实内部账号，造成个人信息暴露
 **检查**：`grep -n 'skillhub\.' SKILL.md`（检测任何内部平台元数据残留）
 **修复**：删除整个 metadata 块；发布者信息由 Skill 市场系统自动记录，无需手动维护
 
 ### AP-22：_meta.json 含真实凭据未排除
-**症状**：Skill 目录下存在 `_meta.json`，其中含真实 appkey 或 author MIS，且没有 .skillignore 排除
-**后果**：打包发布时 _meta.json 随 zip 上传，下载者可获取发布者真实 appkey
-**检查**：`test -f _meta.json && cat _meta.json | grep -E 'appkey|author'`
-**修复**：在 .skillignore 中加入 `_meta.json`；frontmatter 补充标准 `appkey: <your-appkey>` 占位符
+**症状**：Skill 目录下存在 `_meta.json`，其中含真实平台密钥或作者内部账号，且没有 .skillignore 排除
+**后果**：打包发布时 _meta.json 随 zip 上传，下载者可获取发布者真实凭据
+**检查**：`test -f _meta.json && cat _meta.json | grep -E 'key|secret|author'`
+**修复**：在 .skillignore 中加入 `_meta.json`；frontmatter 只写占位符，禁止写入真实凭据
 
 ### AP-23：eval/exec 执行用户输入
 **症状**：脚本中使用 `eval()` 或 `exec()` 处理用户输入或外部数据

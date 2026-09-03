@@ -13,8 +13,6 @@
 
 **推荐用法**：用 `mu-dev-workflow` 管理整体任务节奏和子Agent调度，用 `mu-skill-creator` 聚焦 Skill 内容质量。
 
-## mu-skill-shrimp（技能虾）：管理与上架 Skill 市场
+## 生态内其他工具
 
-Skill 写完后，用 `mu-skill-shrimp` 完成 Skill 市场管理：
-
-**mu-skill-creator** 写好内容 + 安全扫描 + 打包；**mu-skill-shrimp** push上架、搜索、安装/卸载/回滚、标签管理、版本迭代。详见 [publish-workflow.md](publish-workflow.md)
+Skill 写完后的上架、搜索、安装/卸载、版本迭代等发布管理动作，使用所在平台的官方发布工具完成（如 GitHub、ClawHub 等各自提供的发布流程）。
