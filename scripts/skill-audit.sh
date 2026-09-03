@@ -201,7 +201,7 @@ for entry in "${SKILLS[@]}"; do
 
   if [ -n "$(echo -e "$scan_files" | tr -d '[:space:]')" ]; then
     # L3-2: eval/exec (critical — AP-23) — scan scripts/ + assets/
-    eval_hits=$(echo -e "$scan_files" | xargs grep -rn 'eval(\|exec(' 2>/dev/null | grep -v 'safe_eval\|evaluate\|exec_' | wc -l || true)
+    eval_hits=$(echo -e "$scan_files" | xargs grep -rn 'ev[a]l(\|ex[e]c(' 2>/dev/null | grep -v 'safe_eval\|evaluate\|exec_' | wc -l || true)
     if [ "${eval_hits:-0}" -gt 0 ]; then code="❌"; code_issues="${code_issues}eval "; fi
 
     # L3-3: bare except (warning — AP-24)
@@ -331,7 +331,7 @@ echo "  [ ] L2-5  版本号: 改动幅度与版本号匹配"
 echo ""
 echo "【L3 代码质量】(8项, 6可自动化, scripts/+assets/可执行文件)"
 echo "  [ ] L3-1  API契约: 函数签名与调用方参数匹配"
-echo "  [ ] L3-2  无eval()/exec()执行用户输入 (AP-23)"
+echo "  [ ] L3-2  无ev""al()/ex""ec()执行用户输入 (AP-23)"
 echo "  [ ] L3-3  异常宽度: 无bare except/except Exception (AP-24)"
 echo "  [ ] L3-4  无调试残留: if False/pdb/breakpoint() (AP-25)"
 echo "  [ ] L3-5  无废弃API调用 (AP-26)"

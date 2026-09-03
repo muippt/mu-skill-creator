@@ -1,6 +1,6 @@
 ---
 name: mu-skill-creator
-version: 4.1.3
+version: 4.1.4
 display_name: Skill创作发明家
 description: "Skill创建与质量门控，含55项10层审计模型。触发词：创建skill、skill创建、skill审计、质量审计。不适用：skill发布、生态体检（用mu-skill-auditor）"
 tags: Skill开发,质量门控,发布流程,三层模型,组织规范,工作流
