@@ -1,6 +1,6 @@
 ---
 name: mu-skill-creator
-version: 4.1.6
+version: 4.1.7
 display_name: Skill创作发明家
 description: "Skill创建与质量门控，含55项10层审计模型。触发词：创建skill、skill创建、skill审计、质量审计。不适用：skill发布、生态体检（用mu-skill-auditor）"
 tags: Skill开发,质量门控,交付流程,三层模型,组织规范,工作流
@@ -246,7 +246,6 @@ L3：每主题一文件，超100行加索引
 | 20 | IRON LAW照搬通用模板 | 必须含业务专属约束 | IRON LAW5条套话Agent全忽略 | §1失效3 |
 | 21 | frontmatter含真实内部账号 | 删除metadata块 | 公开Skill暴露发布者账号 | §6安全 |
 | 22 | _meta.json含凭据未排除 | .skillignore排除 | 打包含真实平台密钥 | §6安全 |
-
 | 23 | eval/exec执行用户输入 | 用AST白名单替代eval/exec | 多个Skill代码评审 | §1失效1 |
 | 24 | 异常捕获过宽 | 捕获具体异常类型;re-raise或log | 多个Skill代码评审 | §1失效1 |
 | 25 | 调试残留 | 删除pdb/breakpoint/if False | 多个Skill代码评审 | §1失效1 |
