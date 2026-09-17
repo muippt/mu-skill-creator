@@ -124,7 +124,7 @@ Hard rules against credential leakage, personnel data exposure, and restricted s
 | Output format | SKILL.md + reference docs + automated audit report |
 | Line budget | L2 ≤ 300 lines (official recommendation: 500, tightened to 300) |
 | IRON LAW | Business-specific constraints, max 6 rules |
-| Version | v4.1.8 |
+| Version | v4.1.9 |
 
 ---
 
@@ -197,6 +197,6 @@ This project stands on the shoulders of the AI agent community. We acknowledge t
 
 ---
 
-> **Version**: v4.1.8 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
+> **Version**: v4.1.9 · [Landing Page](https://muippt.github.io/mu-skill-creator/) · [Releases](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **What's New in v4.1.8**: New AP-39 + L1-9 machine check — markdown tables split by blank lines (rendering as raw pipe text) are now auto-detected at line level, born from the v4.1.6/v4.1.7 AP-table rendering incident.
+> **What's New in v4.1.9**: Sanitization fix — removed an internal platform name from the AP-39 incident description (quality-gates.md); no functional changes.

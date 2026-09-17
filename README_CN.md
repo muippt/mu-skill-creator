@@ -124,7 +124,7 @@ v4.1 新增：AP-35（事故闭环 / ICE-5）、AP-36（附件文件职责重叠
 | 输出格式 | SKILL.md + 参考文档 + 自动审计报告 |
 | 行数预算 | L2 ≤ 300 行（官方建议 500，收紧至 300 留余量） |
 | IRON LAW | 业务专属约束，上限 6 条 |
-| 版本 | v4.1.8 |
+| 版本 | v4.1.9 |
 
 ---
 
@@ -197,6 +197,6 @@ bash scripts/skill-audit.sh --verbose        # 详细输出
 
 ---
 
-> **版本**：v4.1.8 · [在线主页](https://muippt.github.io/mu-skill-creator/) · [发布历史](https://github.com/muippt/mu-skill-creator/releases)
+> **版本**：v4.1.9 · [在线主页](https://muippt.github.io/mu-skill-creator/) · [发布历史](https://github.com/muippt/mu-skill-creator/releases)
 >
-> **v4.1.8 更新**：新增 AP-39 + L1-9 机检——markdown 表格被空行截断（渲染为裸管道符文本）现在可被行级自动检测，源自 v4.1.6/v4.1.7 AP 表格渲染事故。
+> **v4.1.9 更新**：脱敏修复——移除 AP-39 事故描述中的内部平台名（quality-gates.md），无功能变更。
